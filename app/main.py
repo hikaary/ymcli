@@ -15,7 +15,6 @@ def run_app():
     config = get_config()
     if config is None:
         raise AttributeError("Configuration file not found.")
-    yandex_music_client = YandexMusicClient(config.token)
     my_app = MyApp()
     my_app.run()
 

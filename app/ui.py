@@ -1,6 +1,5 @@
 import npyscreen
 from yandex_music.utils.request_async import asyncio
-
 from yandex_music_client import YandexMusicClient
 
 
@@ -32,9 +31,9 @@ class PlaylistsForm(npyscreen.ActionFormMinimal):
         pass
 
     def while_editing(self, *args):
-        if args[0] == "^P":  # Ctrl + P for Previous Playlist
+        if args[0] == "^P":
             self.playlists_list.h_cursor_line_up()
-        elif args[0] == "^N":  # Ctrl + N for Next Playlist
+        elif args[0] == "^N":
             self.playlists_list.h_cursor_line_down()
 
 
