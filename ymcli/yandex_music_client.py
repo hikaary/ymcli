@@ -1,4 +1,4 @@
-from yandex_music import Client, Playlist, Track, TrackShort
+from yandex_music import Client, Playlist, Track, TracksList
 
 
 class Singleton(type):
@@ -11,22 +11,25 @@ class Singleton(type):
 
 
 class YandexMusicClient(metaclass=Singleton):
-    def __init__(self, token: str = None):  # type: ignore
+    def __init__(self, token: str | None = None):
         self.token = token
         self.client: Client = self.initialize_client()
 
     def initialize_client(self) -> Client:
+        if self.token is None:
+            raise AttributeError("Token not found")
+
         client = Client(self.token)
         return client.init()
 
     def get_playlists(self) -> list[Playlist]:
         return self.client.users_playlists_list()
 
-    def get_likes(self) -> list[TrackShort]:
+    def get_likes(self) -> TracksList:
         likes_song = self.client.users_likes_tracks()
         if likes_song is None:
             raise AttributeError("Client not logged")
-        return likes_song.tracks
+        return likes_song
 
     def search_tracks(self, query: str) -> list[Track]:
         search_result = self.client.search(query, type_="track")
