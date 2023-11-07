@@ -1,17 +1,15 @@
 import npyscreen
-from yandex_music import Playlist, TracksList
+from yandex_music import Playlist, Track, TrackShort, TracksList
 from yandex_music_client import YandexMusicClient
 
 
-class PlaylistsForm(npyscreen.ActionForm):
+class PlaylistsForm(npyscreen.FormBaseNew):
     def create(self):
         self.name = "Playlists"
         self.playlist_ui = self.add(
             npyscreen.MultiLineAction,
             name="Playlists",
         )
-        self.OK_BUTTON_TEXT = ""
-        self.CANCEL_BUTTON_TEXT = ""
         self.playlist_ui.actionHighlighted = self.actionHighlighted
 
         self.ym_client = YandexMusicClient()
@@ -36,7 +34,14 @@ class PlaylistsForm(npyscreen.ActionForm):
         playlist: Playlist | TracksList = self.playlist_ui.playlists[
             self.playlist_ui.cursor_line
         ]
-        self.parentApp.getForm("PLAYLIST_TRACKS").tracks = playlist.fetch_tracks()
+        playlist_tracks: list[TrackShort] | list[Track] = playlist.fetch_tracks()
+
+        if isinstance(playlist_tracks[0], TrackShort):
+            playlist_tracks = [
+                short_track.track for short_track in playlist_tracks  # type: ignore
+            ]
+
+        self.parentApp.getForm("PLAYLIST_TRACKS").tracks = playlist_tracks
         self.parentApp.getForm("PLAYLIST_TRACKS").name = (
             playlist.title if isinstance(playlist, Playlist) else "Likes"
         )

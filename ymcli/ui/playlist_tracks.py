@@ -2,24 +2,36 @@ import npyscreen
 from yandex_music import Track
 
 
-class PlaylistTracksForm(npyscreen.ActionForm):
-    def create(self):
-        self.OK_BUTTON_TEXT = ""
-        self.CANCEL_BUTTON_TEXT = ""
+class MultiLineAction(npyscreen.MultiLineAction):
+    # _contained_widgets = npyscreen.BoxTitle
 
+    def h_cursor_line_up(self, *args, **keywords):
+        super(MultiLineAction, self).h_cursor_line_up(*args, **keywords)
+        self.when_cursor_moved()
+
+    def h_cursor_line_down(self, *args, **keywords):
+        super(MultiLineAction, self).h_cursor_line_down(*args, **keywords)
+        self.when_cursor_moved()
+
+    def when_cursor_moved(self):
+        self.parent.update_track_info()
+
+
+class PlaylistTracksForm(npyscreen.FormBaseNew):
+    def create(self):
         self.tracks: list[Track] | None = None
         self.tracks_list = self.add(
-            npyscreen.MultiLineAction,
+            MultiLineAction,
             relx=2,
             rely=2,
             max_width=40,
-            value_changed_callback=self.on_track_selected,
+            values=[],
         )
-        self.tracks_list.values = []
+        self.tracks_list.actionHighlighted = self.select_track
 
         self.track_info = self.add(
             npyscreen.Pager,
-            relx=53,
+            relx=50,
             rely=2,
         )
 
@@ -28,7 +40,11 @@ class PlaylistTracksForm(npyscreen.ActionForm):
             npyscreen.notify_confirm("Not found tracks")
             self.parentApp.switchForm("MAIN")
             return
+        self.update_tacks_list()
+        self.update_track_info()
 
+    def update_tacks_list(self):
+        assert self.tracks is not None
         for track in self.tracks:
             if track is None:
                 track_name = "Error load track"
@@ -38,21 +54,17 @@ class PlaylistTracksForm(npyscreen.ActionForm):
             self.tracks_list.values.append(track_name)
 
         self.tracks_list.display()
-        self.update_track_info(self.tracks[0])
 
-    def on_track_selected(self, widget):
-        if self.tracks is not None and widget.cursor_line < len(self.tracks):
-            track = self.tracks[widget.cursor_line]
-            self.update_track_info(track)
-
-    def update_track_info(self, track: Track):
+    def update_track_info(self):
+        selected_index = self.tracks_list.cursor_line
+        track = self.tracks[selected_index]
         if track is None:
             track_info = ["Error load track info"]
         else:
-            track_info = [track.title, f"Artist: {track.artists[0].name}"]
+            track_info = [track.title, track.meta_data]
 
         self.track_info.values = track_info
         self.track_info.display()
 
-    def actionHighlighted(self, act_on_this, key_press):
-        pass
+    def select_track(self, act_on_this, key_press):
+        npyscreen.notify_confirm("Track selected")
