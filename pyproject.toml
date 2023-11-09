@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.11"
 yandex-music = "^2.1.1"
 npyscreen = "^4.10.5"
+python-vlc = "^3.0.20123"
 
 [build-system]
 requires = ["poetry-core"]

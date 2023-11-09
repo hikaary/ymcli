@@ -1,5 +1,9 @@
 import npyscreen
+from config import MUSIC_DIR
+from player import Player
+from vlc import os
 from yandex_music import Track
+from yandex_music_client import YandexMusicClient
 
 
 class MultiLineAction(npyscreen.BoxTitle):
@@ -22,6 +26,10 @@ class MultiLineAction(npyscreen.BoxTitle):
     def when_cursor_moved(self):
         self.parent.update_track_info()
 
+    def when_value_edited(self):
+        self.parent.select_track()
+        return super().when_value_edited()
+
 
 class Pager(npyscreen.BoxTitle):
     _contained_widget = npyscreen.Pager
@@ -30,9 +38,13 @@ class Pager(npyscreen.BoxTitle):
 class PlaylistTracksForm(npyscreen.FormBaseNew):
     def create(self):
         self.tracks: list[Track] | None = None
+        self.ym_client = YandexMusicClient()
+        self.player = Player()
+
         y, x = self.useable_space()
         tracks_list_widht = x - int(x / 3)
         tracks_list_height = y - int(y / 8)
+
         self.tracks_list = self.add(
             MultiLineAction,
             values=[],
@@ -41,7 +53,6 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
             max_width=tracks_list_widht,
             max_height=tracks_list_height,
         )
-        self.tracks_list.actionHighlighted = self.select_track
 
         self.track_info = self.add(
             Pager,
@@ -89,8 +100,20 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         self.track_info.values = track_info
         self.track_info.display()
 
-    def select_track(self, act_on_this, key_press):
-        npyscreen.notify_confirm("Track selected")
+    def select_track(self):
+        selected_index = self.tracks_list.entry_widget.cursor_line
+        if selected_index is None:
+            return
+        track = self.tracks[selected_index]
+        saved_tracks = os.listdir(MUSIC_DIR)
+
+        if f"{track.id}.mp3" in saved_tracks:
+            self.player.play(track_id=track.id)
+            return
+
+        npyscreen.notify("Track not downloaded. Start download")
+        self.ym_client.download(track)
+        self.player.play(track_id=track.id)
 
 
 def seconds_to_minutes(seconds):

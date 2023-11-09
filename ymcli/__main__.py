@@ -1,7 +1,8 @@
 import argparse
 
-from config import get_config, save_token
+from config import MUSIC_DIR, get_config, save_token
 from ui import MyApp
+from vlc import os
 from yandex_music_client import YandexMusicClient
 
 
@@ -12,6 +13,9 @@ def create_config():
 
 
 def run_app():
+    if not os.path.exists(MUSIC_DIR):
+        os.makedirs(MUSIC_DIR)
+
     config = get_config()
     if config is None:
         raise AttributeError("Configuration file not found.")

@@ -6,10 +6,12 @@ from dataclasses import dataclass, fields
 @dataclass
 class Config:
     token: str
+    basic_sound_volume: str
 
 
 CONFIG_DIR = os.path.expanduser("~/.config/ymcli/")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.ini")
+MUSIC_DIR = os.path.expanduser("~/.ymcli/")
 
 
 def get_config():
@@ -39,5 +41,14 @@ def save_token(token):
 
 def create_config():
     token = input("Enter your Yandex Music token: ")
+    if not os.path.exists(CONFIG_DIR):
+        os.makedirs(CONFIG_DIR)
+    config = configparser.ConfigParser()
+    config["DEFAULT"] = {
+        "Token": token,
+        "basic_sound_volume": "50",
+    }
+    with open(CONFIG_FILE, "w") as configfile:
+        config.write(configfile)
     save_token(token)
     print("Configuration file created successfully.")
