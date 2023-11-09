@@ -1,3 +1,4 @@
+from config import MUSIC_DIR
 from yandex_music import Client, Playlist, Track, TracksList
 
 
@@ -42,3 +43,6 @@ class YandexMusicClient(metaclass=Singleton):
     def remove_from_favorites(self, track_id: str) -> bool:
         operation_result = self.client.users_likes_tracks_remove(track_id)
         return operation_result
+
+    def download(self, track: Track):
+        track.download(MUSIC_DIR + str(track.id) + ".mp3")
