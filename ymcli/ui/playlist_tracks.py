@@ -12,12 +12,6 @@ from yandex_music_client import YandexMusicClient
 class TrackBox(npyscreen.BoxTitle):
     _contained_widgets = npyscreen.MultiLineAction
 
-    def h_cursor_line_up(self, *args, **keywords):
-        self.when_cursor_moved()
-
-    def h_cursor_line_down(self, *args, **keywords):
-        self.when_cursor_moved()
-
     def when_cursor_moved(self):
         self.parent.update_track_info()
 
