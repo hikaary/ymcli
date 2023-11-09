@@ -6,21 +6,13 @@ from yandex_music import Track
 from yandex_music_client import YandexMusicClient
 
 
-class MultiLineAction(npyscreen.BoxTitle):
+class TrackBox(npyscreen.BoxTitle):
     _contained_widgets = npyscreen.MultiLineAction
 
     def h_cursor_line_up(self, *args, **keywords):
-        super(MultiLineAction, self).h_cursor_line_up(  # type:ignore
-            *args,
-            **keywords,
-        )
         self.when_cursor_moved()
 
     def h_cursor_line_down(self, *args, **keywords):
-        super(MultiLineAction, self).h_cursor_line_down(  # type:ignore
-            *args,
-            **keywords,
-        )
         self.when_cursor_moved()
 
     def when_cursor_moved(self):
@@ -28,7 +20,6 @@ class MultiLineAction(npyscreen.BoxTitle):
 
     def when_value_edited(self):
         self.parent.select_track()
-        return super().when_value_edited()
 
 
 class Pager(npyscreen.BoxTitle):
@@ -44,22 +35,32 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         y, x = self.useable_space()
         tracks_list_widht = x - int(x / 3)
         tracks_list_height = y - int(y / 8)
-
         self.tracks_list = self.add(
-            MultiLineAction,
+            TrackBox,
             values=[],
             relx=2,
             rely=2,
             max_width=tracks_list_widht,
             max_height=tracks_list_height,
         )
-
         self.track_info = self.add(
             Pager,
             relx=tracks_list_widht + int(x / 20),
             rely=2,
             max_height=tracks_list_height,
         )
+        self.track_title = self.add(
+            npyscreen.TitleFixedText,
+            name="Track",
+            value="No track playing",
+            max_width=100,
+        )
+        self.progress_bar = self.add(
+            npyscreen.SliderPercent,
+            value=0,
+        )
+
+        self.first_edit = True
 
     def beforeEditing(self):
         if self.tracks is None or len(self.tracks) == 0:
@@ -101,6 +102,9 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         self.track_info.display()
 
     def select_track(self):
+        if self.first_edit:
+            self.first_edit = False
+            return
         selected_index = self.tracks_list.entry_widget.cursor_line
         if selected_index is None:
             return
@@ -108,12 +112,30 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         saved_tracks = os.listdir(MUSIC_DIR)
 
         if f"{track.id}.mp3" in saved_tracks:
-            self.player.play(track_id=track.id)
+            self.player.play(track=track)
+            self.update_bar_title(track)
             return
 
         npyscreen.notify("Track not downloaded. Start download")
         self.ym_client.download(track)
-        self.player.play(track_id=track.id)
+        self.player.play(track=track)
+        self.update_bar_title(track)
+
+    def update_bar_title(self, track: Track):
+        self.track_title.value = f"{track.title} by {', '.join(track.artists_name())}"
+        self.track_title.update()
+
+    def while_waiting(self):
+        track = self.player.get_current_track()
+        position = self.player.get_position()
+
+        if track and position is not None:
+            duration = track.duration_ms // 1000  # type:ignore
+            percentage = (position / duration) * 100
+            self.progress_bar.value = percentage
+            self.progress_bar.display()
+
+        super(PlaylistTracksForm, self).while_waiting()
 
 
 def seconds_to_minutes(seconds):

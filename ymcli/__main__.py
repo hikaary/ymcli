@@ -1,15 +1,9 @@
 import argparse
 
-from config import MUSIC_DIR, get_config, save_token
+from config import MUSIC_DIR, create_config, get_config
 from ui import MyApp
 from vlc import os
 from yandex_music_client import YandexMusicClient
-
-
-def create_config():
-    token = input("Enter your Yandex Music token: ")
-    save_token(token)
-    print("Configuration file created successfully.")
 
 
 def run_app():
