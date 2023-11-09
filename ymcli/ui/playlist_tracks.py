@@ -1,3 +1,6 @@
+import threading
+import time
+
 import npyscreen
 from config import MUSIC_DIR
 from player import Player
@@ -53,14 +56,26 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
             npyscreen.TitleFixedText,
             name="Track",
             value="No track playing",
-            max_width=100,
+            # rely=tracks_list_height + 5,
+            # relx=2,
         )
         self.progress_bar = self.add(
-            npyscreen.SliderPercent,
+            npyscreen.Slider,
             value=0,
+            label=False,
+            # max_width=x - int(x / 6),
         )
+        # self.progress_text = self.add(
+        #     npyscreen.TitleText,
+        #     name="Progress",
+        #     value="00:00 / 00:00",
+        #     relx=x - int(x / 10) + 1,
+        # )
 
         self.first_edit = True
+
+        self.running = True
+        self._start_progress_thread()
 
     def beforeEditing(self):
         if self.tracks is None or len(self.tracks) == 0:
@@ -125,17 +140,33 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         self.track_title.value = f"{track.title} by {', '.join(track.artists_name())}"
         self.track_title.update()
 
-    def while_waiting(self):
-        track = self.player.get_current_track()
-        position = self.player.get_position()
+    def _start_progress_thread(self):
+        self.progress_thread = threading.Thread(
+            target=self._progress_update_loop,
+            daemon=True,
+        )
+        self.progress_thread.start()
 
-        if track and position is not None:
-            duration = track.duration_ms // 1000  # type:ignore
-            percentage = (position / duration) * 100
-            self.progress_bar.value = percentage
-            self.progress_bar.display()
+    def _progress_update_loop(self):
+        while True:
+            position = self.player.get_position()
+            current_track = self.player.get_current_track()
+            if current_track and position is not None:
+                duration_seconds = current_track.duration_ms // 1000  # type: ignore
+                absolute_position = int(position * duration_seconds)
+                self.progress_bar.out_of = duration_seconds
+                self.progress_bar.value = absolute_position
+                self.progress_bar.display()
 
-        super(PlaylistTracksForm, self).while_waiting()
+            time.sleep(1)
+
+    def _stop_progress_thread(self):
+        self.running = False
+        if self.progress_thread.is_alive():
+            self.progress_thread.join()
+
+    def on_clean_up(self):
+        self._stop_progress_thread()
 
 
 def seconds_to_minutes(seconds):
