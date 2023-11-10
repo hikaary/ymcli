@@ -6,7 +6,11 @@ setup(
     description="Music player for yandex music",
     author="hikaary",
     author_email="hikary.local@gmail.com",
-    packages=["ymcli", "ymcli.ui"],
+    packages=[
+        "ymcli",
+        "ymcli.ui",
+        "ymcli.logs",
+    ],
     install_requires=[
         "yandex-music",
         "npyscreen",
