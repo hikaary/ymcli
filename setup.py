@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="ymcli",
-    version="1.0",
+    version="0.0.1",
     description="Music player for yandex music",
     author="hikaary",
     author_email="hikary.local@gmail.com",
