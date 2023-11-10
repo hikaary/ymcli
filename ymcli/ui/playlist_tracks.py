@@ -31,7 +31,7 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
 
         y, x = self.useable_space()
         tracks_list_widht = x - int(x / 3)
-        tracks_list_height = y - int(y / 8)
+        tracks_list_height = y - int(y / 6)
         self.tracks_list = self.add(
             TrackBox,
             values=[],
@@ -46,25 +46,26 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
             rely=2,
             max_height=tracks_list_height,
         )
+        progress_bar_width = x - int(x / 7)
         self.track_title = self.add(
             npyscreen.TitleFixedText,
             name="Track",
             value="No track playing",
-            # rely=tracks_list_height + 5,
-            # relx=2,
+            rely=-5,
         )
         self.progress_bar = self.add(
             npyscreen.Slider,
             value=0,
             label=False,
-            # max_width=x - int(x / 6),
+            max_width=progress_bar_width,
+            rely=-3,
         )
-        # self.progress_text = self.add(
-        #     npyscreen.TitleText,
-        #     name="Progress",
-        #     value="00:00 / 00:00",
-        #     relx=x - int(x / 10) + 1,
-        # )
+        self.progress_text = self.add(
+            npyscreen.Textfield,
+            value="00:00 / 00:00",
+            rely=-3,
+            relx=-18,
+        )
 
         self.first_edit = True
 
@@ -142,17 +143,32 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         self.progress_thread.start()
 
     def _progress_update_loop(self):
-        while True:
-            position = self.player.get_position()
-            current_track = self.player.get_current_track()
-            if current_track and position is not None:
-                duration_seconds = current_track.duration_ms // 1000  # type: ignore
-                absolute_position = int(position * duration_seconds)
-                self.progress_bar.out_of = duration_seconds
-                self.progress_bar.value = absolute_position
-                self.progress_bar.display()
+        last_time = time.perf_counter()
+        while self.running:
+            current_time = time.perf_counter()
+            elapsed = current_time - last_time
 
-            time.sleep(1)
+            if elapsed >= 1.0:
+                position = self.player.get_position()
+                current_track = self.player.get_current_track()
+                if current_track and position is not None:
+                    duration_seconds = current_track.duration_ms // 1000  # type: ignore
+                    absolute_position = int(position * duration_seconds)
+                    self.progress_bar.out_of = duration_seconds
+                    self.progress_bar.value = absolute_position
+
+                    current_time_formatted = seconds_to_minutes(absolute_position)
+                    duration_formatted = seconds_to_minutes(duration_seconds)
+                    self.progress_text.value = (
+                        f"{current_time_formatted} / {duration_formatted}"
+                    )
+
+                    self.progress_text.display()
+                    self.progress_bar.display()
+
+                last_time = current_time
+
+            time.sleep(0.01)
 
     def _stop_progress_thread(self):
         self.running = False
