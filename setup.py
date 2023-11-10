@@ -12,5 +12,9 @@ setup(
         "npyscreen",
         "python-vlc",
     ],
-    scripts=["ymcli/ymcli.py"],
+    entry_points={
+        "console_scripts": [
+            "ymcli=ymcli.__main__:main",
+        ],
+    },
 )
