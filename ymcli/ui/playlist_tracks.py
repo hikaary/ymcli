@@ -72,6 +72,7 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
 
         self.first_edit = True
         self.running = False
+        self.exit_in_progress = False
 
     def beforeEditing(self):
         if self.tracks is None or len(self.tracks) == 0:
@@ -213,6 +214,9 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         )
 
     def h_exit_to_playlists(self, ch):
+        if self.exit_in_progress:
+            return
+        self.exit_in_progress = True
         self.player.stop()
         self.parentApp.switchForm("MAIN")
         self.tracks_list.values = []
