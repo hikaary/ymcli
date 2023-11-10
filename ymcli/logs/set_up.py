@@ -6,7 +6,7 @@ from logging.handlers import RotatingFileHandler
 def setup_logger():
     """Базовая настройка логирования"""
     LOGS_DIR = os.path.expanduser("~/.local/share/ymcli/")
-    LOGS_FILE = os.path.join(LOGS_DIR, "config.logs")
+    LOGS_FILE = os.path.join(LOGS_DIR, "yamcli.logs")
     if not os.path.exists(LOGS_DIR):
         os.makedirs(LOGS_DIR)
 
