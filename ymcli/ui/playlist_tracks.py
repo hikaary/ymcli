@@ -71,15 +71,14 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         )
 
         self.first_edit = True
-
-        self.running = True
-        self._start_progress_thread()
+        self.running = False
 
     def beforeEditing(self):
         if self.tracks is None or len(self.tracks) == 0:
             npyscreen.notify_confirm("Not found tracks")
             self.parentApp.switchForm("MAIN")
             return
+        self._start_progress_thread()
         self.update_tacks_list()
         self.update_track_info()
 
@@ -147,6 +146,7 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         self.track_title.update()
 
     def _start_progress_thread(self):
+        self.running = True
         self.progress_thread = threading.Thread(
             target=self._progress_update_loop,
             daemon=True,
