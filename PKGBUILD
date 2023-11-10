@@ -1,7 +1,7 @@
 # Maintainer: hikaary <hikary.local@gmail.com>
-pkgname=ymcli-git
+pkgname=ymcli
 _pkgname=ymcli
-pkgver=0.0.1
+pkgver=1.0
 pkgrel=1
 provides=("$_pkgname")
 conflicts=("$_pkgname")
@@ -13,11 +13,6 @@ depends=("python" "vlc")
 source=("git+https://github.com/hikaary/$_pkgname.git")
 md5sums=("SKIP")
 
-pkgver()
-{
-  cd "$_pkgname"
-  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-}
 
 package()
 {

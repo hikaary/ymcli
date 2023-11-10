@@ -12,4 +12,5 @@ setup(
         "npyscreen",
         "python-vlc",
     ],
+    scripts=["ymcli/__main__.py"],
 )
