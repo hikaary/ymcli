@@ -46,6 +46,9 @@ class Player(metaclass=Singleton):
     def set_volume(self, volume: int) -> None:
         self.player.audio_set_volume(volume)
 
+    def get_volume(self) -> int:
+        return self.player.audio_get_volume()
+
     def get_position(self) -> float | bool:
         """Возвращает позицию относительно максимальной длинны. return 0.0-1.0"""
         if self.now_playing is not None:

@@ -73,6 +73,7 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         self.first_edit = True
         self.running = False
         self.exit_in_progress = False
+        self.repeat_track = False
 
     def beforeEditing(self):
         if self.tracks is None or len(self.tracks) == 0:
@@ -172,7 +173,9 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
                     )
 
                     if duration_seconds - absolute_position <= 1:
-                        self.tracks_list.entry_widget.cursor_line += 1
+                        self.tracks_list.entry_widget.cursor_line += (
+                            1 if not self.repeat_track else 0
+                        )
                         self.select_track()
 
                 last_time = current_time
@@ -210,13 +213,28 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
                 curses.ascii.ESC: self.h_exit_to_playlists,
                 curses.KEY_RIGHT: self.h_move_track_position_to_right,
                 curses.KEY_LEFT: self.h_move_track_position_to_left,
+                ord("r"): self.h_repeat_track,
+                curses.KEY_UP: self.h_volume_up,
+                curses.KEY_DOWN: self.h_volume_down,
             }
         )
+
+    def h_volume_up(self, ch):
+        new_volume = self.player.get_volume() + 5
+        self.player.set_volume(new_volume)
+
+    def h_volume_down(self, ch):
+        new_volume = self.player.get_volume() - 5
+        self.player.set_volume(new_volume)
+
+    def h_repeat_track(self, ch):
+        self.repeat_track = not self.repeat_track
 
     def h_exit_to_playlists(self, ch):
         if self.exit_in_progress:
             return
         self.exit_in_progress = True
+        self.repeat_track = False
         self.player.stop()
         self.parentApp.switchForm("MAIN")
         self.tracks_list.values = []
