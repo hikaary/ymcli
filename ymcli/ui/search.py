@@ -1,5 +1,6 @@
 import npyscreen
-from yandex_music_client import YandexMusicClient
+
+from ..yandex_music_client import YandexMusicClient
 
 
 class SearchForm(npyscreen.ActionFormMinimal):

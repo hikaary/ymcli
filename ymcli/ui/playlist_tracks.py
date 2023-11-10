@@ -2,12 +2,13 @@ import threading
 import time
 
 import npyscreen
-from config import MUSIC_DIR
 from npyscreen.wgwidget import curses
-from player import Player
 from vlc import os
 from yandex_music import Track
-from yandex_music_client import YandexMusicClient
+
+from ..config import MUSIC_DIR
+from ..player import Player
+from ..yandex_music_client import YandexMusicClient
 
 
 class TrackBox(npyscreen.BoxTitle):

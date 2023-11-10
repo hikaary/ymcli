@@ -1,5 +1,6 @@
-from config import MUSIC_DIR
 from yandex_music import Client, Playlist, Track, TracksList
+
+from .config import MUSIC_DIR
 
 
 class Singleton(type):

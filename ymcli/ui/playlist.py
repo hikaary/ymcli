@@ -1,6 +1,7 @@
 import npyscreen
 from yandex_music import Playlist, Track, TrackShort, TracksList
-from yandex_music_client import YandexMusicClient
+
+from ..yandex_music_client import YandexMusicClient
 
 
 class PlaylistsForm(npyscreen.FormBaseNew):

@@ -1,7 +1,8 @@
 import vlc
-from config import MUSIC_DIR, get_config
-from logs.actions import log_play
 from yandex_music import Track
+
+from .config import MUSIC_DIR, get_config
+from .logs.actions import log_play
 
 CONFIG = get_config()
 
