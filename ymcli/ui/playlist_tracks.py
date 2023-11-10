@@ -3,6 +3,7 @@ import time
 
 import npyscreen
 from config import MUSIC_DIR
+from npyscreen.wgwidget import curses
 from player import Player
 from vlc import os
 from yandex_music import Track
@@ -40,6 +41,8 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
             max_width=tracks_list_widht,
             max_height=tracks_list_height,
         )
+        self._add_hotkeys()
+
         self.track_info = self.add(
             Pager,
             relx=tracks_list_widht + int(x / 20),
@@ -130,6 +133,14 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
         self.ym_client.download(track)
         self.player.play(track=track)
         self.update_bar_title(track)
+        self.check_next_track_downloaded(selected_index)
+
+    def check_next_track_downloaded(self, now_select_index):
+        track = self.tracks[now_select_index + 1]
+        saved_tracks = os.listdir(MUSIC_DIR)
+        if f"{track.id}.mp3" in saved_tracks:
+            return
+        self.ym_client.download(track)
 
     def update_bar_title(self, track: Track):
         self.track_title.value = f"{track.title} by {', '.join(track.artists_name())}"
@@ -154,21 +165,33 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
                 if current_track and position is not None:
                     duration_seconds = current_track.duration_ms // 1000  # type: ignore
                     absolute_position = int(position * duration_seconds)
-                    self.progress_bar.out_of = duration_seconds
-                    self.progress_bar.value = absolute_position
-
-                    current_time_formatted = seconds_to_minutes(absolute_position)
-                    duration_formatted = seconds_to_minutes(duration_seconds)
-                    self.progress_text.value = (
-                        f"{current_time_formatted} / {duration_formatted}"
+                    self._update_bar_info(
+                        duration_seconds=duration_seconds,
+                        absolute_position=absolute_position,
                     )
 
-                    self.progress_text.display()
-                    self.progress_bar.display()
+                    if duration_seconds - absolute_position <= 1:
+                        self.tracks_list.entry_widget.cursor_line += 1
+                        self.select_track()
 
                 last_time = current_time
 
             time.sleep(0.01)
+
+    def _update_bar_info(
+        self,
+        duration_seconds: int,
+        absolute_position: int,
+    ):
+        self.progress_bar.out_of = duration_seconds
+        self.progress_bar.value = absolute_position
+
+        current_time_formatted = seconds_to_minutes(absolute_position)
+        duration_formatted = seconds_to_minutes(duration_seconds)
+        self.progress_text.value = f"{current_time_formatted} / {duration_formatted}"
+
+        self.progress_text.display()
+        self.progress_bar.display()
 
     def _stop_progress_thread(self):
         self.running = False
@@ -177,6 +200,31 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
 
     def on_clean_up(self):
         self._stop_progress_thread()
+
+    def _add_hotkeys(self):
+        self.tracks_list.entry_widget.add_handlers(
+            {
+                ord("p"): self.h_pause_track,
+                curses.ascii.SP: self.h_pause_track,
+                curses.ascii.ESC: self.h_exit_to_playlists,
+                curses.KEY_RIGHT: self.h_move_track_position_to_right,
+                curses.KEY_LEFT: self.h_move_track_position_to_left,
+            }
+        )
+
+    def h_exit_to_playlists(self, ch):
+        self.player.stop()
+        self._stop_progress_thread()
+        self.parentApp.switchForm("MAIN")
+
+    def h_move_track_position_to_right(self, ch):
+        self.player.move_track_position(right=True)
+
+    def h_move_track_position_to_left(self, ch):
+        self.player.move_track_position(right=False)
+
+    def h_pause_track(self, ch):
+        self.player.play_pause()
 
 
 def seconds_to_minutes(seconds):

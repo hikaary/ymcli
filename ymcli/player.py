@@ -22,6 +22,9 @@ class Player(metaclass=Singleton):
         self.now_playing: Track | None = None
         self.is_paused = False
 
+    def stop(self) -> None:
+        self.player.stop()
+
     def play_pause(self) -> None:
         if self.player.is_playing():
             self.player.pause()
@@ -47,7 +50,13 @@ class Player(metaclass=Singleton):
             return self.player.get_position()
         return False
 
-    def get_current_track(self) -> Track | bool:
+    def get_current_track(self) -> Track | None:
         if self.now_playing is not None:
             return self.now_playing
-        return False
+
+    def move_track_position(self, right: bool):
+        if not self.player.is_playing:
+            return
+        current_position = self.player.get_position()
+        next_position = current_position + 0.05 if right else current_position - 0.05
+        self.player.set_position(next_position)
