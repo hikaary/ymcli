@@ -24,7 +24,7 @@ def run_app():
     my_app.run()
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Yandex Music CLI Player.")
     subparsers = parser.add_subparsers()
 
@@ -44,3 +44,7 @@ if __name__ == "__main__":
             import traceback
 
             logger.warning(traceback.format_exc())
+
+
+if __name__ == "__main__":
+    main()
