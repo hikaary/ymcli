@@ -2,12 +2,13 @@ import argparse
 import logging
 
 from config import MUSIC_DIR, create_config, get_config
+from logs.set_up import setup_logger
 from ui import MyApp
 from vlc import os
 from yandex_music_client import YandexMusicClient
-from ymcli.logs.set_up import setup_logger
 
 logger = logging.getLogger(__name__)
+
 
 def run_app():
     if not os.path.exists(MUSIC_DIR):
@@ -41,5 +42,3 @@ if __name__ == "__main__":
             import traceback
 
             logger.warning(traceback.format_exc())
-
-

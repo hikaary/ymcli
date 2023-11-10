@@ -214,8 +214,9 @@ class PlaylistTracksForm(npyscreen.FormBaseNew):
 
     def h_exit_to_playlists(self, ch):
         self.player.stop()
-        self._stop_progress_thread()
         self.parentApp.switchForm("MAIN")
+        self.tracks_list.values = []
+        self._stop_progress_thread()
 
     def h_move_track_position_to_right(self, ch):
         self.player.move_track_position(right=True)

@@ -1,8 +1,7 @@
 import vlc
 from config import MUSIC_DIR, get_config
+from logs.actions import log_play
 from yandex_music import Track
-
-from ymcli.logs.actions import log_play
 
 CONFIG = get_config()
 
@@ -36,6 +35,7 @@ class Player(metaclass=Singleton):
                 return
             self.player.play()
             self.isPaused = False
+
     @log_play
     def play(self, track: Track) -> None:
         self.media = self.instance.media_new(MUSIC_DIR + str(track.id) + ".mp3")
