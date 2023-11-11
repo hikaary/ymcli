@@ -1,7 +1,7 @@
 # Maintainer: hikaary <hikary.local@gmail.com>
 pkgname=ymcli
 _pkgname=ymcli
-pkgver=0.0.1
+pkgver=0.1
 pkgrel=1
 provides=("$_pkgname")
 conflicts=("$_pkgname")
