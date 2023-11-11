@@ -22,7 +22,7 @@
   sudo pacman -S vlc python pip
   git clone https://github.com/hikaary/ymcli
   cd ymcli 
-  python setup.py install 
+  python setup.py install --root=ymcli
   ```
 
 ## Dependencies (excluding python libraries)
