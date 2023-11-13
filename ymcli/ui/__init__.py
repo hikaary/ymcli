@@ -2,18 +2,15 @@ import npyscreen
 
 from .playlist import PlaylistsForm
 from .playlist_tracks import PlaylistTracksForm
-from .search import SearchForm
+from .stations import SelectStationForm, StationForm
+from .widgets import ProgressBar
 
 
-class MyApp(npyscreen.NPSAppManaged):
+class App(npyscreen.NPSAppManaged):
     def onStart(self):
         self.addForm("MAIN", PlaylistsForm)
-        self.addForm("SEARCH", SearchForm)
         self.addForm("PLAYLIST_TRACKS", PlaylistTracksForm)
-
-    def change_form(self, name):
-        self.switchForm(name)
-        self.resetHistory()
-
-    def onCleanExit(self):
-        npyscreen.notify_wait("Goodbye!")
+        bar = ProgressBar()
+        bar.start()
+        # self.addForm("SELECT_STATION", SelectStationForm)
+        # self.addForm("STATION_TRACKS", StationForm)

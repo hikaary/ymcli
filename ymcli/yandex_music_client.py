@@ -1,6 +1,7 @@
 from yandex_music import Client, Playlist, Track, TracksList
 
 from .config import MUSIC_DIR
+from .radio import Radio
 
 
 class Singleton(type):
@@ -16,6 +17,7 @@ class YandexMusicClient(metaclass=Singleton):
     def __init__(self, token: str | None = None):
         self.token = token
         self.client: Client = self.initialize_client()
+        self.radio = Radio(self.client)
 
     def initialize_client(self) -> Client:
         if self.token is None:

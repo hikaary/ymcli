@@ -7,7 +7,7 @@ from vlc import os
 
 from .config import MUSIC_DIR, create_config, get_config
 from .logs.set_up import setup_logger
-from .ui import MyApp
+from .ui import App
 from .yandex_music_client import YandexMusicClient
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ def run_app():
     if config is None:
         raise AttributeError("Configuration file not found.")
     YandexMusicClient(config.token)
-    my_app = MyApp()
+    my_app = App()
     my_app.run()
 
 

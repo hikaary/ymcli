@@ -1,21 +1,24 @@
-import npyscreen
 from yandex_music import Playlist, Track, TrackShort, TracksList
 
 from ..yandex_music_client import YandexMusicClient
+from . import widgets
+from .forms import BaseForm
 
 
-class PlaylistsForm(npyscreen.FormBaseNew):
+class PlaylistsForm(BaseForm):
     def create(self):
+        super().create()
         self.name = "Playlists"
         self.playlist_ui = self.add(
-            npyscreen.MultiLineAction,
+            widgets.MultiLineActionBox,
             name="Playlists",
+            max_height=self.max_widgets_height,
         )
-        self.playlist_ui.actionHighlighted = self.actionHighlighted
-
+        self.bar = self.add_bar()
         self.ym_client = YandexMusicClient()
 
     def beforeEditing(self):
+        self.bar.active_form = self.name
         self.update_playlists()
 
     def update_playlists(self):
@@ -28,12 +31,17 @@ class PlaylistsForm(npyscreen.FormBaseNew):
         playlists_names.insert(0, f"Likes - {len(likes_tracks)} tracks")
         playlists.insert(0, likes_tracks)  # type: ignore
 
+        playlists_names.append("Staions")
+
         self.playlist_ui.values = playlists_names
         self.playlist_ui.playlists = playlists
 
-    def actionHighlighted(self, act_on_this, key_press):
+    def when_select(self):
+        if self.playlist_ui.value == len(self.playlist_ui.values) - 1:
+            self.parentApp.switchForm("SELECT_STATION")
+
         playlist: Playlist | TracksList = self.playlist_ui.playlists[
-            self.playlist_ui.cursor_line
+            self.playlist_ui.value
         ]
         playlist_tracks: list[TrackShort] | list[Track] = playlist.fetch_tracks()
 
@@ -47,3 +55,4 @@ class PlaylistsForm(npyscreen.FormBaseNew):
             playlist.title if isinstance(playlist, Playlist) else "Likes"
         )
         self.parentApp.switchForm("PLAYLIST_TRACKS")
+        self.playlist_ui.value = None
