@@ -37,8 +37,8 @@ class PlaylistsForm(BaseForm):
         self.playlist_ui.playlists = playlists
 
     def when_select(self):
-        if self.playlist_ui.value == len(self.playlist_ui.values) - 1:
-            self.parentApp.switchForm("SELECT_STATION")
+        # if self.playlist_ui.value == len(self.playlist_ui.values) - 1:
+        #     self.parentApp.switchForm("SELECT_STATION")
 
         playlist: Playlist | TracksList = self.playlist_ui.playlists[
             self.playlist_ui.value
