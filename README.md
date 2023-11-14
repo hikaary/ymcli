@@ -18,27 +18,46 @@
   ```
 
 * Compile for Linux (from source code)
+    > Ymcli has been tested on python 3.11. You can try running it on a lower version.
+    > You will need python to run it, but it is not listed in the installation below.
+
     ```sh
-    #Install system dependencies
-    sudo pacman -S vlc python pip 
+    # Install system dependencies Arch-like
+    sudo pacman -S vlc 
+    ```
+
+    ```sh
+    # Install system dependencies Rhel-like
+    yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+    yum install https://download1.rpmfusion.org/free/el/rpmfusion-free-release-6.noarch.rpm
+    yum install vlc vlc-core
+    ```
+
+    ```sh
+    # Install system dependencies Debian-like
+    sudo apt install vlc 
+    ```
+
+    ```sh
+    # Clone source 
+    git clone https://github.com/hikaary/ymcli
+    cd ymcli 
     ```
 
     ```sh 
-    git clone https://github.com/hikaary/ymcli
-    cd ymcli 
+    # Build 
     python setup.py install
     ```
-* Use poetry
+
     ```sh
-    git clone https://github.com/hikaary/ymcli
-    cd ymcli 
+    # Run app from poetry
     poetry install && poetry shell
     poetry run python -m ymcli
     ```
 
 ## First run
 A token will be requested at the first startup.
-You can get the token here by clicking this [link](https://yandex-music.readthedocs.io/en/main/token.html)
+ou can find out about getting the token [here](https://yandex-music.readthedocs.io/en/main/token.html)
 
 
 # Config & Logs
