@@ -19,10 +19,11 @@
 
 * Compile for Linux (from source code)
     > Ymcli has been tested on python 3.11. You can try running it on a lower version.
+    >
     > You will need python to run it, but it is not listed in the installation below.
 
     ```sh
-    # Install system dependencies Arch-like
+    #Install system dependencies Arch-like
     sudo pacman -S vlc 
     ```
 
