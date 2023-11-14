@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
-import argparse
 import logging
-
-from vlc import os
+import os
 
 from .config import MUSIC_DIR, create_config, get_config
 from .logs.set_up import setup_logger
@@ -19,32 +17,23 @@ def run_app():
 
     config = get_config()
     if config is None:
-        raise AttributeError("Configuration file not found.")
+        create_config()
+        print("Run app again")
+        return
+
     YandexMusicClient(config.token)
-    my_app = App()
-    my_app.run()
+    app = App()
+    app.run()
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Yandex Music CLI Player.")
-    subparsers = parser.add_subparsers()
+    setup_logger()
+    try:
+        run_app()
+    except Exception:
+        import traceback
 
-    parser_create_config = subparsers.add_parser(
-        "create-config", help="Create configuration file."
-    )
-    parser_create_config.set_defaults(func=create_config)
-
-    args = parser.parse_args()
-    if hasattr(args, "func"):
-        args.func()
-    else:
-        setup_logger()
-        try:
-            run_app()
-        except Exception:
-            import traceback
-
-            logger.warning(traceback.format_exc())
+        logger.warning(traceback.format_exc())
 
 
 if __name__ == "__main__":

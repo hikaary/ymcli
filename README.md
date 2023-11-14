@@ -18,12 +18,33 @@
   ```
 
 * Compile for Linux (from source code)
-  ```sh
-  sudo pacman -S vlc python pip
-  git clone https://github.com/hikaary/ymcli
-  cd ymcli 
-  python setup.py install
-  ```
+    ```sh
+    #Install system dependencies
+    sudo pacman -S vlc python pip 
+    ```
+
+    ```sh 
+    git clone https://github.com/hikaary/ymcli
+    cd ymcli 
+    python setup.py install
+    ```
+* Use poetry
+    ```sh
+    git clone https://github.com/hikaary/ymcli
+    cd ymcli 
+    poetry install && poetry shell
+    poetry run python -m ymcli
+    ```
+
+## First run
+A token will be requested at the first startup.
+You can get the token here by clicking this [link](https://yandex-music.readthedocs.io/en/main/token.html)
+
+
+# Config & Logs
+* Config file - `~/.config/ymcli/config.ini`
+* Log file - `~/.local/ymcli/ymcli.log`
+
 ## Key actions 
 
 | Key | Action |
@@ -40,7 +61,7 @@
 | L | Like now playing track |
 | D | Dislike now playing track | 
 
-## Dependencies
+## Dependencies (excluding python dependencies)
 * python 3.11
 * vlc 3.0.20
 

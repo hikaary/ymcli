@@ -34,7 +34,7 @@ def save_token(token):
     if not os.path.exists(CONFIG_DIR):
         os.makedirs(CONFIG_DIR)
     config = configparser.ConfigParser()
-    config["DEFAULT"] = {"Token": token}
+    config["DEFAULT"]["Token"] = token
     with open(CONFIG_FILE, "w") as configfile:
         config.write(configfile)
 
@@ -50,5 +50,4 @@ def create_config():
     }
     with open(CONFIG_FILE, "w") as configfile:
         config.write(configfile)
-    save_token(token)
     print("Configuration file created successfully.")
