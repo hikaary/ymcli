@@ -1,2 +1,2 @@
-from .bar import ProgressBar
-from .other import *
+from .bar import ProgressBar  # noqa
+from .other import *  # noqa
