@@ -20,17 +20,22 @@ class BaseForm(npyscreen.FormBaseNew):
         bar.add_widgets(self, self.max_x)
         return bar
 
+    def beforeEditing(self):
+        self.exit_in_progress = False
+
     def add_hotkeys(self, widget):
         widget.add_handlers(
             {
-                ord("p"): self.h_pause_track,
+                ord("p"): self.h_previous_track,
                 curses.ascii.SP: self.h_pause_track,
+                curses.ascii.TAB: lambda _: _,
                 curses.ascii.ESC: self.h_exit_to_main,
                 curses.KEY_RIGHT: self.h_move_track_position_to_right,
                 curses.KEY_LEFT: self.h_move_track_position_to_left,
                 ord("r"): self.h_repeat_track,
                 curses.KEY_UP: self.h_volume_up,
                 curses.KEY_DOWN: self.h_volume_down,
+                ord("n"): self.h_next_track,
             }
         )
 
@@ -60,6 +65,13 @@ class BaseForm(npyscreen.FormBaseNew):
 
     def h_pause_track(self, _):
         self.player.play_pause()
+
+    def h_next_track(self, _):
+        npyscreen.notify("Skiping track")
+        self.player.next_track()
+
+    def h_previous_track(self, _):
+        self.player.previous_track()
 
     def on_exit(self):
         pass

@@ -12,5 +12,5 @@ class App(npyscreen.NPSAppManaged):
         self.addForm("PLAYLIST_TRACKS", PlaylistTracksForm)
         bar = ProgressBar()
         bar.start()
-        # self.addForm("SELECT_STATION", SelectStationForm)
-        # self.addForm("STATION_TRACKS", StationForm)
+        self.addForm("SELECT_STATION", SelectStationForm)
+        self.addForm("STATION_TRACKS", StationForm)

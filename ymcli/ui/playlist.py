@@ -1,6 +1,5 @@
 from yandex_music import Playlist, Track, TrackShort, TracksList
 
-from ..yandex_music_client import YandexMusicClient
 from . import widgets
 from .forms import BaseForm
 
@@ -15,7 +14,6 @@ class PlaylistsForm(BaseForm):
             max_height=self.max_widgets_height,
         )
         self.bar = self.add_bar()
-        self.ym_client = YandexMusicClient()
 
     def beforeEditing(self):
         self.bar.active_form = self.name
@@ -31,20 +29,23 @@ class PlaylistsForm(BaseForm):
         playlists_names.insert(0, f"Likes - {len(likes_tracks)} tracks")
         playlists.insert(0, likes_tracks)  # type: ignore
 
-        playlists_names.append("Staions")
+        playlists_names.append("Моя волна")
 
         self.playlist_ui.values = playlists_names
         self.playlist_ui.playlists = playlists
 
     def when_select(self):
-        # if self.playlist_ui.value == len(self.playlist_ui.values) - 1:
-        #     self.parentApp.switchForm("SELECT_STATION")
+        if self.playlist_ui.value == len(self.playlist_ui.values) - 1:
+            self.playlist_ui.value = None
+            self.parentApp.switchForm("SELECT_STATION")
+            return
 
         playlist: Playlist | TracksList = self.playlist_ui.playlists[
             self.playlist_ui.value
         ]
         playlist_tracks: list[TrackShort] | list[Track] = playlist.fetch_tracks()
 
+        self.playlist_ui.value = None
         if isinstance(playlist_tracks[0], TrackShort):
             playlist_tracks = [
                 short_track.track for short_track in playlist_tracks  # type: ignore
@@ -55,4 +56,3 @@ class PlaylistsForm(BaseForm):
             playlist.title if isinstance(playlist, Playlist) else "Likes"
         )
         self.parentApp.switchForm("PLAYLIST_TRACKS")
-        self.playlist_ui.value = None

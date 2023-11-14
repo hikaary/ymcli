@@ -1,45 +1,47 @@
-import npyscreen
-from yandex_music import Playlist, StationResult, Track, TrackShort, TracksList
+import threading
+import time
 
-from ..yandex_music_client import YandexMusicClient
-from .playlist_tracks import PlaylistTracksForm
+from yandex_music import Station, StationResult, Track
+
+from ymcli.radio import Radio
+from ymcli.ui.func import seconds_to_minutes
+
+from . import widgets
+from .forms import BaseForm
 
 
-class Pager(npyscreen.BoxTitle):
-    _contained_widget = npyscreen.Pager
-
-
-class SelectStationForm(npyscreen.FormBaseNew):
+class SelectStationForm(BaseForm):
     def create(self):
+        super().create()
         self.name = "Stations"
-        self.ym_client = YandexMusicClient()
 
-        y, x = self.useable_space()
-        stations_list_width = x - int(x / 3)
-        stations_list_height = y - int(y / 8)
+        stations_list_width = self.max_x - int(self.max_x / 3)
         self.stations_ui = self.add(
-            npyscreen.MultiLineAction,
+            widgets.MultiLineActionBox,
             values=[],
             relx=2,
             rely=2,
             max_width=stations_list_width,
-            max_height=stations_list_height,
+            max_height=self.max_widgets_height,
         )
-        self.stations_ui.actionHighlighted = self.actionHighlighted
-        self.stations_ui.when_cursor_moved = self.update_station_info
 
         self.station_info = self.add(
-            Pager,
-            relx=stations_list_width + int(x / 20),
+            widgets.PagerBox,
+            relx=stations_list_width + int(self.max_x / 20),
             rely=2,
-            max_height=stations_list_height,
+            max_height=self.max_widgets_height,
         )
+        self.add_hotkeys(self.stations_ui.entry_widget)
+
+        self.bar = self.add_bar()
 
     def beforeEditing(self):
+        super().beforeEditing()
+        self.bar.active_form = "Stations"
         self.update_stations_list()
-        self.update_station_info()
+        self.when_cursor_moved()
 
-    def update_station_info(self):
+    def when_cursor_moved(self):
         selected_index = self.stations_ui.entry_widget.cursor_line
         if selected_index is None:
             return
@@ -53,33 +55,90 @@ class SelectStationForm(npyscreen.FormBaseNew):
     def update_stations_list(self):
         stations: list[StationResult] = self.ym_client.radio.get_all_stations()
 
-        station_names = [
-            (f"{station.station.name} - {station.rup_description}")
-            for station in stations
-        ]
+        station_names = [(f"{station.station.name}") for station in stations]
 
         self.stations_ui.values = station_names
         self.stations_ui.stations = stations
 
-    def actionHighlighted(self, act_on_this, key_press):
-        return
-        playlist: Playlist | TracksList = self.station_ui.playlists[
-            self.station_ui.cursor_line
-        ]
-        playlist_tracks: list[TrackShort] | list[Track] = playlist.fetch_tracks()
+    def when_select(self):
+        station: StationResult = self.stations_ui.stations[self.stations_ui.value]
 
-        if isinstance(playlist_tracks[0], TrackShort):
-            playlist_tracks = [
-                short_track.track for short_track in playlist_tracks  # type: ignore
-            ]
-
-        self.parentApp.getForm("PLAYLIST_TRACKS").tracks = playlist_tracks
-        self.parentApp.getForm("PLAYLIST_TRACKS").name = (
-            playlist.title if isinstance(playlist, Playlist) else "Likes"
-        )
-        self.parentApp.switchForm("PLAYLIST_TRACKS")
+        self.parentApp.getForm("STATION_TRACKS").station = station.station
+        self.parentApp.getForm(
+            "STATION_TRACKS"
+        ).name = f"{station.rup_title} - {station.station.name}"
+        self.parentApp.switchForm("STATION_TRACKS")
 
 
-class StationForm(PlaylistTracksForm):
+class StationForm(BaseForm):
     def create(self):
         super().create()
+        self.name = "StationTracks"
+        self.station: Station | None = None
+
+        self.track_info_widget = self.add(
+            widgets.PagerBox,
+            relx=2,
+            rely=2,
+            max_height=self.max_widgets_height,
+        )
+        self.add_hotkeys(self.track_info_widget.entry_widget)
+        self.radio: Radio = self.ym_client.radio
+
+        self.bar = self.add_bar()
+
+    def beforeEditing(self):
+        super().beforeEditing()
+        self.bar.active_form = "StationTracks"
+        self.start_station()
+        self.playing = True
+
+    def start_station(self):
+        track: Track = self.radio.get_first_track(
+            station_id=f"{self.station.id.type}:{self.station.id.tag}",
+            station_from=self.station.id_for_from,
+        )
+        self.player.play(track=track)
+        self._start_update_track_info()
+
+    def when_cursor_moved(self):
+        pass
+
+    def when_select(self):
+        pass
+
+    def on_exit(self):
+        self.radio.current_track = None
+        self.player.stop()
+        self._stop_progress_thread()
+
+    def _start_update_track_info(self):
+        self.playing = True
+        self.progress_thread = threading.Thread(
+            target=self._progress_update_loop,
+            daemon=True,
+        )
+        self.progress_thread.start()
+
+    def _stop_progress_thread(self):
+        self.playing = False
+        if self.progress_thread.is_alive():
+            self.progress_thread.join()
+
+    def _progress_update_loop(self):
+        while self.playing:
+            track = self.player.now_playing
+            if track is None:
+                continue
+
+            duration = seconds_to_minutes(track.duration_ms // 1000)  # type: ignore
+            track_info = [
+                "Название: " + track.title,  # type: ignore
+                "Исполнитель: " + ", ".join(track.artists_name()),
+                "Длительность: " + duration,
+            ]
+
+            self.track_info_widget.values = track_info
+            self.track_info_widget.display()
+
+            time.sleep(1)

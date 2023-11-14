@@ -1,11 +1,6 @@
 import npyscreen
-from npyscreen.utilNotify import notify_confirm
-from vlc import os
 from yandex_music import Track
 
-from ..config import MUSIC_DIR
-from ..player import Player
-from ..yandex_music_client import YandexMusicClient
 from . import widgets
 from .forms import BaseForm
 from .func import seconds_to_minutes
@@ -17,8 +12,6 @@ class PlaylistTracksForm(BaseForm):
         self.name = "PlayListTracks"
 
         self.tracks: list[Track] | None = None
-        self.ym_client = YandexMusicClient()
-        self.player = Player()
 
         tracks_list_widget_width = self.max_x - int(self.max_x / 3)
         self.tracks_list_widget = self.add(
@@ -39,12 +32,10 @@ class PlaylistTracksForm(BaseForm):
         )
         self.bar = self.add_bar()
 
-        self.exit_in_progress = False
-
     def beforeEditing(self):
+        super().beforeEditing()
         self.bar.active_form = "PlayListTracks"
-        self.exit_in_progress = False
-        self.player.track_list = self.tracks
+        self.player.track_list = self.tracks  # type: ignore
         self.update_tacks_list()
         self.when_cursor_moved()
 
@@ -81,23 +72,7 @@ class PlaylistTracksForm(BaseForm):
         if selected_index is None:
             return
         track = self.tracks[selected_index]
-        saved_tracks = os.listdir(MUSIC_DIR)
-
-        if f"{track.id}.mp3" in saved_tracks:
-            self.player.play(track=track)
-            return
-
-        npyscreen.notify("Track not downloaded. Start download")
-        self.ym_client.download(track)
         self.player.play(track=track)
-        self.check_next_track_downloaded(selected_index)
-
-    def check_next_track_downloaded(self, now_select_index):
-        track = self.tracks[now_select_index + 1]
-        saved_tracks = os.listdir(MUSIC_DIR)
-        if f"{track.id}.mp3" in saved_tracks:
-            return
-        self.ym_client.download(track)
 
     def on_exit(self):
         self.tracks_list_widget.values = []
