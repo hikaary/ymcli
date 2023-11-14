@@ -49,6 +49,9 @@ You can get the token here by clicking this [link](https://yandex-music.readthed
 
 | Key | Action |
 | ------------- | ------------- |
+| K | Move cursor up |
+| J | Move cursor down |
+| ENTER | Select |
 | Space | Play/Pause |
 | ESC | Got to playlists |
 | UP | Volume up |
