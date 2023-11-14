@@ -49,3 +49,9 @@ class YandexMusicClient(metaclass=Singleton):
 
     def download(self, track: Track):
         track.download(MUSIC_DIR + str(track.id) + ".mp3")
+
+    def like_track(self, track: Track):
+        self.client.users_likes_tracks_add(track_ids=track.id)
+
+    def dislike_track(self, track: Track):
+        self.client.users_likes_tracks_remove(track_ids=track.id)

@@ -36,6 +36,8 @@ class BaseForm(npyscreen.FormBaseNew):
                 curses.KEY_UP: self.h_volume_up,
                 curses.KEY_DOWN: self.h_volume_down,
                 ord("n"): self.h_next_track,
+                ord("d"): self.h_dislike_track,
+                ord("l"): self.h_like_track,
             }
         )
 
@@ -67,11 +69,20 @@ class BaseForm(npyscreen.FormBaseNew):
         self.player.play_pause()
 
     def h_next_track(self, _):
-        npyscreen.notify("Skiping track")
         self.player.next_track()
 
     def h_previous_track(self, _):
         self.player.previous_track()
+
+    def h_like_track(self, _):
+        if self.player.now_playing:
+            self.ym_client.like_track(self.player.now_playing)
+            npyscreen.notify_confirm("Трек добавлен в любимые")
+
+    def h_dislike_track(self, _):
+        if self.player.now_playing:
+            self.ym_client.dislike_track(self.player.now_playing)
+            npyscreen.notify_confirm("Трек убран из любимых")
 
     def on_exit(self):
         pass

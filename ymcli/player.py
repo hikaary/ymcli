@@ -55,7 +55,7 @@ class Player(metaclass=Singleton):
         saved_tracks = os.listdir(MUSIC_DIR)
         if f"{track.id}.mp3" not in saved_tracks:
             if self.track_list:
-                npyscreen.notify("Track not downloaded. Start download")
+                npyscreen.notify("Трек не загружен. Начинаю загрузку...")
             self.ym_client.download(track)
 
         self.media = self.instance.media_new(MUSIC_DIR + str(track.id) + ".mp3")
@@ -141,7 +141,7 @@ class Player(metaclass=Singleton):
                 time.sleep(0.01)
                 continue
 
-            if position > 1.0 - 0.02:
+            if position > 1.0 - 0.005:
                 if self.radio.current_track is not None:
                     track = self.radio.get_next_track()
                     self.play(track=track)

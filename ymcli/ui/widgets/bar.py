@@ -90,35 +90,28 @@ class ProgressBar(metaclass=Singleton):
             self.progress_thread.join()
 
     def _progress_update_loop(self):
-        last_time = time.perf_counter()
         while self.running:
-            current_time = time.perf_counter()
-            elapsed = current_time - last_time
-
             if self.active_form not in self.forms:
                 time.sleep(0.01)
                 continue
-            if elapsed >= 1.0:
-                active_form_index = self.forms.index(self.active_form)
+            active_form_index = self.forms.index(self.active_form)
 
-                bar_title, progress_bar, progress_text = self.widgets_list[
-                    active_form_index
-                ]
-                position = self.player.get_position()
-                current_track = self.player.get_current_track()
-                if current_track and position is not None:
-                    duration_seconds = current_track.duration_ms // 1000  # type: ignore
-                    absolute_position = int(position * duration_seconds)
-                    self._update_bar_info(
-                        track=current_track,
-                        duration_seconds=duration_seconds,
-                        absolute_position=absolute_position,
-                        progress_bar=progress_bar,
-                        progress_text=progress_text,
-                        bar_title=bar_title,
-                    )
-
-                last_time = current_time
+            bar_title, progress_bar, progress_text = self.widgets_list[
+                active_form_index
+            ]
+            position = self.player.get_position()
+            current_track = self.player.get_current_track()
+            if current_track and position is not None:
+                duration_seconds = current_track.duration_ms // 1000  # type: ignore
+                absolute_position = int(position * duration_seconds)
+                self._update_bar_info(
+                    track=current_track,
+                    duration_seconds=duration_seconds,
+                    absolute_position=absolute_position,
+                    progress_bar=progress_bar,
+                    progress_text=progress_text,
+                    bar_title=bar_title,
+                )
 
             time.sleep(0.01)
 
