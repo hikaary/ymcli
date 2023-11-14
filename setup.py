@@ -10,6 +10,7 @@ setup(
         "ymcli",
         "ymcli.ui",
         "ymcli.logs",
+        "ymcli.ui.widgets",
     ],
     install_requires=[
         "aiofiles==23.2.1",
