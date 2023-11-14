@@ -37,6 +37,8 @@
 | R | Repeat track |
 | N | Skip track |
 | P | Previous track |
+| L | Like now playing track |
+| D | Dislike now playing track | 
 
 ## Dependencies
 * python 3.11

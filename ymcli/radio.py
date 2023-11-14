@@ -1,6 +1,5 @@
 from random import random
 
-from npyscreen import notify_confirm
 from yandex_music import Client, StationResult, Track
 
 

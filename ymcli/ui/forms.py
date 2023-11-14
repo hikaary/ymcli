@@ -77,12 +77,10 @@ class BaseForm(npyscreen.FormBaseNew):
     def h_like_track(self, _):
         if self.player.now_playing:
             self.ym_client.like_track(self.player.now_playing)
-            npyscreen.notify_confirm("Трек добавлен в любимые")
 
     def h_dislike_track(self, _):
         if self.player.now_playing:
             self.ym_client.dislike_track(self.player.now_playing)
-            npyscreen.notify_confirm("Трек убран из любимых")
 
     def on_exit(self):
         pass
