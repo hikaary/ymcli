@@ -55,8 +55,10 @@ class BaseForm(npyscreen.FormBaseNew):
     def h_exit_to_main(self, _):
         if self.exit_in_progress:
             return
-        self.on_exit()
+        exit_status = self.on_exit()
         self.exit_in_progress = True
+        if exit_status is not None:
+            return
         self.parentApp.switchForm("MAIN")
 
     def h_move_track_position_to_right(self, _):

@@ -6,7 +6,7 @@ from .stations import SelectStationForm, StationForm
 from .widgets import ProgressBar
 
 
-class App(npyscreen.NPSAppManaged):
+class Ymcli(npyscreen.NPSAppManaged):
     def onStart(self):
         self.addForm("MAIN", PlaylistsForm)
         self.addForm("PLAYLIST_TRACKS", PlaylistTracksForm)

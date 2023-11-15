@@ -5,7 +5,7 @@ import os
 
 from .config import MUSIC_DIR, create_config, get_config
 from .logs.set_up import setup_logger
-from .ui import App
+from .ui import Ymcli
 from .yandex_music_client import YandexMusicClient
 
 logger = logging.getLogger()
@@ -20,7 +20,7 @@ def run_app():
         config = create_config()
 
     YandexMusicClient(config.token)
-    app = App()
+    app = Ymcli()
     app.run()
 
 

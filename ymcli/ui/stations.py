@@ -41,6 +41,9 @@ class SelectStationForm(BaseForm):
         self.update_stations_list()
         self.when_cursor_moved()
 
+    def on_exit(self):
+        self.stations_ui.value = None
+
     def when_cursor_moved(self):
         selected_index = self.stations_ui.entry_widget.cursor_line
         if selected_index is None:
@@ -68,6 +71,7 @@ class SelectStationForm(BaseForm):
             "STATION_TRACKS"
         ).name = f"{station.rup_title} - {station.station.name}"
         self.parentApp.switchForm("STATION_TRACKS")
+        self.stations_ui.value = None
 
 
 class StationForm(BaseForm):
@@ -111,6 +115,8 @@ class StationForm(BaseForm):
         self.radio.current_track = None
         self.player.stop()
         self._stop_progress_thread()
+        self.parentApp.switchForm("SELECT_STATION")
+        return True
 
     def _start_update_track_info(self):
         self.playing = True
