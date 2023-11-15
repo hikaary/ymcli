@@ -1,3 +1,4 @@
+import logging
 import os
 import threading
 import time
@@ -9,9 +10,9 @@ from yandex_music import Track
 from ymcli.yandex_music_client import YandexMusicClient
 
 from .config import MUSIC_DIR, get_config
-from .logs.actions import log_play
 
 CONFIG = get_config()
+logger = logging.getLogger(__file__)
 
 
 class Singleton(type):
@@ -50,12 +51,15 @@ class Player(metaclass=Singleton):
             self.player.play()
             self.isPaused = False
 
-    @log_play
     def play(self, track: Track) -> None:
+        logger.info(f"Start play {track.id}")
+
         saved_tracks = os.listdir(MUSIC_DIR)
         if f"{track.id}.mp3" not in saved_tracks:
             if self.track_list:
                 npyscreen.notify("Трек не загружен. Начинаю загрузку...")
+
+            logger.info(f"Start download {track.id}")
             self.ym_client.download(track)
 
         self.media = self.instance.media_new(MUSIC_DIR + str(track.id) + ".mp3")
@@ -81,34 +85,44 @@ class Player(metaclass=Singleton):
             return self.now_playing
 
     def next_track(self):
+        logger.info("Get next track called")
         if self.now_playing is None:
             return
 
         if self.radio.current_track:
+            logger.info("Radio enabled, call get next track")
             track = self.radio.get_next_track()
             self.play(track=track)
             return
 
         last_track_index = self.track_list.index(self.now_playing)
         if last_track_index == len(self.track_list) + 1:  # type: ignore
+            logger.info("Track list ended. Stopping player")
             self.stop()
             return
 
+        logger.info("Next track finded")
         self.play(track=self.track_list[last_track_index + 1])
 
     def previous_track(self):
+        logger.info("Get previous track called")
         if self.now_playing is None or self.radio.current_track:
             return
 
         last_track_index = self.track_list.index(self.now_playing)
         if last_track_index == len(self.track_list) - 1:  # type: ignore
+            logger.info("The previous track could not be found")
             self.stop()
             return
+
+        logger.info("Previous track finded")
         self.play(track=self.track_list[last_track_index - 1])
 
     def move_track_position(self, right: bool):
         if not self.player.is_playing:
             return
+        logger.info("Move track position")
+
         current_position = self.player.get_position()
         next_position = current_position + 0.05 if right else current_position - 0.05
 

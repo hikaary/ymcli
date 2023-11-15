@@ -8,7 +8,7 @@ from .logs.set_up import setup_logger
 from .ui import App
 from .yandex_music_client import YandexMusicClient
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 def run_app():
@@ -17,9 +17,7 @@ def run_app():
 
     config = get_config()
     if config is None:
-        create_config()
-        print("Run app again")
-        return
+        config = create_config()
 
     YandexMusicClient(config.token)
     app = App()
@@ -30,10 +28,11 @@ def main():
     setup_logger()
     try:
         run_app()
-    except Exception:
+    except Exception as e:
         import traceback
 
         logger.warning(traceback.format_exc())
+        raise e
 
 
 if __name__ == "__main__":

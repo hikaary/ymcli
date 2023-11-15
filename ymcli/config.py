@@ -1,6 +1,9 @@
 import configparser
+import logging
 import os
 from dataclasses import dataclass, fields
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -26,17 +29,8 @@ def get_config():
                 }
                 return Config(**config_data)
             except KeyError as e:
-                print(f"Missing configuration field: {e}")
+                logger.warning(f"Missing configuration field: {e}")
     return None
-
-
-def save_token(token):
-    if not os.path.exists(CONFIG_DIR):
-        os.makedirs(CONFIG_DIR)
-    config = configparser.ConfigParser()
-    config["DEFAULT"]["Token"] = token
-    with open(CONFIG_FILE, "w") as configfile:
-        config.write(configfile)
 
 
 def create_config():
@@ -50,4 +44,5 @@ def create_config():
     }
     with open(CONFIG_FILE, "w") as configfile:
         config.write(configfile)
-    print("Configuration file created successfully.")
+    logging.info("Configuration file created successfully.")
+    return Config(**config["DEFAULT"])
