@@ -1,0 +1,14 @@
+version: '3'
+services:
+  music-player:
+    build: .
+    volumes:
+      - music-data:/root/.ymcli
+      - log-data:/root/.local/share/ymcli/
+      - /tmp/.X11-unix:/tmp/.X11-unix
+
+
+
+volumes:
+  music-data:
+  log-data:
