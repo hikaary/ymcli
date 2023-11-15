@@ -7,8 +7,6 @@ services:
       - log-data:/root/.local/share/ymcli/
       - /tmp/.X11-unix:/tmp/.X11-unix
 
-
-
 volumes:
   music-data:
   log-data:
