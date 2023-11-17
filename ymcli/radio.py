@@ -1,3 +1,4 @@
+import asyncio
 from random import random
 
 from yandex_music import Client, StationResult, Track
@@ -14,37 +15,68 @@ class Radio:
         self.current_track: Track | None = None
         self.station_tracks = None
 
-    def get_all_stations(self) -> list[StationResult]:
-        stations = self.client.rotor_stations_list()
+    async def get_all_stations(self) -> list[StationResult]:
+        loop = asyncio.get_running_loop()
+        stations = await loop.run_in_executor(
+            None,
+            self.client.rotor_stations_list,
+        )
         available_stations = []
         for station in stations:
             if station.rup_description:
                 available_stations.append(station)
         return available_stations
 
-    def get_first_track(self, station_id, station_from) -> Track:
+    async def get_first_track(self, station_id, station_from) -> Track:
         self.station_id = station_id
         self.station_from = station_from
 
-        self.__update_radio_batch()
-        self.current_track = self.__update_current_track()
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(
+            None,
+            self.__update_radio_batch,
+        )
+        result = await loop.run_in_executor(
+            None,
+            self.__update_current_track,
+        )
+        self.current_track = result
 
         return self.current_track
 
-    def get_next_track(self) -> Track:
+    async def get_next_track(self) -> Track:
         assert (
             self.current_track is not None
             and self.play_id is not None
             and self.station_tracks is not None
         )
-        self.__send_play_end_track(self.current_track, self.play_id)
-        self.__send_play_end_radio(self.current_track, self.station_tracks.batch_id)
+
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(
+            None,
+            self.__send_play_end_track,
+            self.current_track,
+            self.play_id,
+        )
+        await loop.run_in_executor(
+            None,
+            self.__send_play_end_radio,
+            self.current_track,
+            self.station_tracks.batch_id,
+        )
 
         self.index += 1
         if self.index >= len(self.station_tracks.sequence):
-            self.__update_radio_batch(self.current_track.track_id)
+            await loop.run_in_executor(
+                None,
+                self.__update_radio_batch,
+                self.current_track.track_id,
+            )
 
-        self.current_track = self.__update_current_track()
+        self.current_track = await loop.run_in_executor(
+            None,
+            self.__update_current_track,
+        )
         return self.current_track
 
     def __update_radio_batch(self, queue: int | str | bool = False):

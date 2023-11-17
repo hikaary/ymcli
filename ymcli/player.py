@@ -1,15 +1,14 @@
+import asyncio
 import logging
 import os
-import threading
-import time
 
-import npyscreen
 import vlc
-from yandex_music import Track
-
-from ymcli.yandex_music_client import YandexMusicClient
+from textual.app import App
+from textual.message import Message
+from yandex_music import Playlist, StationResult, Track, TracksList
 
 from .config import MUSIC_DIR, get_config
+from .yandex_music_client import YandexMusicClient
 
 CONFIG = get_config()
 logger = logging.getLogger(__file__)
@@ -24,8 +23,21 @@ class Singleton(type):
         return cls._instances[cls]
 
 
+class TrackInfoUpdate(Message):
+    def __init__(self, track: Track, widget_selector: str) -> None:
+        self.track = track
+        self.widget_selector = widget_selector
+        super().__init__()
+
+
+class BarInfoUpdate(Message):
+    def __init__(self, track: Track) -> None:
+        self.track = track
+        super().__init__()
+
+
 class Player(metaclass=Singleton):
-    def __init__(self) -> None:
+    def __init__(self, app: App | None = None) -> None:
         self.instance = vlc.Instance()
         self.player: vlc.MediaPlayer = self.instance.media_player_new()
         self.player.audio_set_volume(int(CONFIG.basic_sound_volume))
@@ -35,37 +47,44 @@ class Player(metaclass=Singleton):
         self.now_playing: Track | None = None
         self.is_paused = False
         self.palying = False
+        self.app = app
+
         self.track_list: list[Track] = []
+        self.playlists: list[Playlist | TracksList] = []
+        self.stations: list[StationResult] = []
 
     def stop(self) -> None:
+        self.playing = False
         self.player.stop()
-        self._stop_progress_thread()
 
-    def play_pause(self) -> None:
+    async def play_pause(self) -> None:
         if self.player.is_playing():
             self.player.pause()
             self.isPaused = True
         else:
-            if self.player.play() == -1:
-                return
-            self.player.play()
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, self.player.play)
             self.isPaused = False
 
-    def play(self, track: Track) -> None:
+    async def play(self, track: Track) -> None:
         logger.debug(f"Start play {track.id}")
 
         saved_tracks = os.listdir(MUSIC_DIR)
         if f"{track.id}.mp3" not in saved_tracks:
-            npyscreen.notify("Трек не загружен. Начинаю загрузку...")
-
+            load_indicatopr = self.app.query_one("LoadingIndicator")
+            load_indicatopr.styles.visibility = "visible"
             logger.debug(f"Start download {track.id}")
-            self.ym_client.download(track)
+            await self.ym_client.download(track)
+            load_indicatopr.styles.visibility = "hidden"
 
-        self.media = self.instance.media_new(MUSIC_DIR + str(track.id) + ".mp3")
+        self.media = self.instance.media_new(f"{MUSIC_DIR}{track.id}.mp3")
         self.player.set_media(self.media)
-        self.play_pause()
+
+        self.app.post_message(BarInfoUpdate(track))
+        await self.play_pause()
+        self.playing = False
         if self.now_playing is None:
-            self._start_progress_thread()
+            asyncio.create_task(self.update_bar())
         self.now_playing = track
 
     def set_volume(self, volume: int) -> None:
@@ -83,44 +102,39 @@ class Player(metaclass=Singleton):
         if self.now_playing is not None:
             return self.now_playing
 
-    def next_track(self):
-        logger.debug("Get next track called")
+    async def next_track(self) -> None:
         if self.now_playing is None:
             return
 
         if self.radio.current_track:
-            logger.debug("Radio enabled, call get next track")
-            track = self.radio.get_next_track()
-            self.play(track=track)
+            track = await self.radio.get_next_track()
+            self.app.post_message(TrackInfoUpdate(track, "station_track_info"))
+            await self.play(track=track)
             return
 
         last_track_index = self.track_list.index(self.now_playing)
         if last_track_index == len(self.track_list) + 1:  # type: ignore
-            logger.debug("Track list ended. Stopping player")
             self.stop()
             return
 
-        logger.debug("Next track finded")
-        self.play(track=self.track_list[last_track_index + 1])
+        track = self.track_list[last_track_index + 1]
+        self.app.post_message(TrackInfoUpdate(track, "playlist_track_info"))
+        await self.play(track=track)
 
-    def previous_track(self):
-        logger.debug("Get previous track called")
+    async def previous_track(self) -> None:
         if self.now_playing is None or self.radio.current_track:
             return
 
         last_track_index = self.track_list.index(self.now_playing)
         if last_track_index == len(self.track_list) - 1:  # type: ignore
-            logger.debug("The previous track could not be found")
             self.stop()
             return
 
-        logger.debug("Previous track finded")
-        self.play(track=self.track_list[last_track_index - 1])
+        await self.play(track=self.track_list[last_track_index - 1])
 
     def move_track_position(self, right: bool):
         if not self.player.is_playing:
             return
-        logger.debug("Move track position")
 
         current_position = self.player.get_position()
         next_position = current_position + 0.05 if right else current_position - 0.05
@@ -129,41 +143,37 @@ class Player(metaclass=Singleton):
 
         self.player.set_position(next_position)
 
-    def _start_progress_thread(self):
+    async def update_bar(self):
         self.playing = True
-        self.progress_thread = threading.Thread(
-            target=self._progress_update_loop,
-            daemon=True,
-        )
-        self.progress_thread.start()
-
-    def _stop_progress_thread(self):
-        self.playing = False
-        self.now_playing = None
-        if self.progress_thread.is_alive():
-            self.progress_thread.join()
-
-    def _progress_update_loop(self):
-        while self.playing:
-            position = self.player.get_position()
-            if position is None:
-                time.sleep(1)
-                continue
-
-            if self.now_playing is None:
-                time.sleep(0.01)
-                continue
-
-            if position > 1.0 - 0.005:
-                if self.radio.current_track is not None:
-                    track = self.radio.get_next_track()
-                    self.play(track=track)
-                    time.sleep(0.01)
+        try:
+            while self.playing:
+                position = self.player.get_position()
+                if position is None:
+                    await asyncio.sleep(1)
                     continue
 
-                last_track_index = self.track_list.index(self.now_playing)
-                if last_track_index == len(self.track_list) + 1:  # type: ignore
-                    self.stop()
-                else:
-                    self.play(track=self.track_list[last_track_index + 1])
-            time.sleep(0.01)
+                if self.now_playing is None:
+                    await asyncio.sleep(0.01)
+                    continue
+
+                if position > 1.0 - 0.01:
+                    if self.radio.current_track is not None:
+                        track = await self.radio.get_next_track()
+                        self.app.post_message(
+                            TrackInfoUpdate(track, "station_track_info")
+                        )
+                        await self.play(track=track)
+                        continue
+
+                    last_track_index = self.track_list.index(self.now_playing)
+                    if last_track_index == len(self.track_list) + 1:  # type: ignore
+                        self.stop()
+                    else:
+                        track = self.track_list[last_track_index + 1]
+                        self.app.post_message(
+                            TrackInfoUpdate(track, "playlist_track_info")
+                        )
+                        await self.play(track=track)
+                await asyncio.sleep(0.01)
+        finally:
+            self.playing = False

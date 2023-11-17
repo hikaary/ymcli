@@ -1,2 +1,3 @@
-from .bar import ProgressBar  # noqa
-from .other import *  # noqa
+from .bar import *  # noqa
+from .label import *  # noqa
+from .select import *  # noqa

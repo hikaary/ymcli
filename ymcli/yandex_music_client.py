@@ -1,3 +1,5 @@
+import asyncio
+
 from yandex_music import Client, Playlist, Track, TracksList
 
 from .config import MUSIC_DIR
@@ -39,19 +41,16 @@ class YandexMusicClient(metaclass=Singleton):
         search_result = self.client.search(query, type_="track")
         return search_result.tracks.results
 
-    def add_to_favorites(self, track_id: str) -> bool:
-        operation_result = self.client.users_likes_tracks_add(track_id)
-        return operation_result
-
-    def remove_from_favorites(self, track_id: str) -> bool:
-        operation_result = self.client.users_likes_tracks_remove(track_id)
-        return operation_result
-
-    def download(self, track: Track):
-        track.download(MUSIC_DIR + str(track.id) + ".mp3")
+    async def download(self, track: Track):
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(
+            None,
+            track.download,
+            MUSIC_DIR + str(track.id) + ".mp3",
+        )
 
     def like_track(self, track: Track):
-        self.client.users_likes_tracks_add(track_ids=track.id)
+        track.like()
 
     def dislike_track(self, track: Track):
-        self.client.users_likes_tracks_remove(track_ids=track.id)
+        track.dislike()

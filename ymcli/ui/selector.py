@@ -1,35 +1,38 @@
-from textual.app import App, ComposeResult
-from textual.widgets import Header
+from textual.app import ComposeResult
+from textual.containers import Container
+from textual.widgets import Header, LoadingIndicator
 from textual.widgets.option_list import Option, Separator
 from yandex_music import Playlist, TracksList
 
 from ..player import Player
 from ..yandex_music_client import YandexMusicClient
 from . import widgets
-from .playlist_tracks import PlaylistTracks
+from .base_screen import BaseScreen
 
 
-class Ymcli(App):
-    CSS_PATH = "css/selectplaylist.tcss"
-
-    MODES = {
-        "playlisttracks": PlaylistTracks,
-    }
+class SelectorInputs(BaseScreen):
+    CSS_PATH = "css/selector.tcss"
 
     def __init__(self):
         super().__init__()
 
         self.player = Player()
         self.ym_client = YandexMusicClient()
-        self.playlists = []
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield widgets.SelectPlayListTrack(*self.get_playlists())
+        yield LoadingIndicator()
+        yield widgets.Playlists(
+            *self.get_playlists(),
+            id="playlists",
+        )
+        with Container(id="bar_container"):
+            yield widgets.BarTitle()
+            yield widgets.Bar()
 
     def get_playlists(self) -> list[Option | Separator]:
         likes_tracks: TracksList = self.ym_client.get_likes()
-        self.playlists = [1, likes_tracks]
+        self.player.playlists = [likes_tracks, likes_tracks]
         playlists: list[Playlist] = self.ym_client.get_playlists()
         values = [
             Option("Моя волна"),
@@ -44,5 +47,5 @@ class Ymcli(App):
                 ),
             )
             values.append(Separator())
-            self.playlists.append(playlist)
+            self.player.playlists.append(playlist)
         return values

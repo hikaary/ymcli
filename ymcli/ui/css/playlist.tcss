@@ -1,0 +1,19 @@
+#playlist_tracks {
+  border: round white;
+  height: 80%;
+  width: 60%;
+
+  margin: 1 2 0 2;
+  dock: left;
+  background: $boost 0%;
+}
+
+#playlist_track_info {
+  height: 80%;
+  width: 35%;
+  border: round white;
+  margin: 1 2 0 2;
+  dock: right;
+  text-align: left;
+}
+

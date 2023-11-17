@@ -1,0 +1,61 @@
+Screen {
+  layers: below above;
+  align: center middle;
+  border: round white;
+  background: transparent;
+}
+
+LoadingIndicator {
+  align: center middle;
+  layer: above;
+  height: 3; 
+  width: 10;
+  visibility: hidden;
+  border: round white;
+}
+
+OptionList > .option-list--option-highlighted {
+    color: black;
+    text-style: bold;
+    background: white;
+}
+
+#bar_container {
+  dock: bottom;
+  width: 100%;
+  height: 15%;
+  margin: 0 2 1 2;
+  border: round white;
+}
+
+#bar_title {
+  offset: 4 1;
+  align: left top;
+}
+
+ProgressBar {
+  offset-y: 2;
+  dock: bottom;
+  width: 100%;
+  align: center middle;
+  height: 5;
+  margin: 0 2 1 2;
+}
+
+#bar {
+  height: 2;
+  width: 90vw;
+}
+Bar > .bar--complete {
+  color: $error;
+}
+
+Bar > .bar--indeterminate {
+  color: white;
+  background: black;
+}
+
+Bar > .bar--bar {
+  color: $primary;
+  background: $primary 30%;
+}

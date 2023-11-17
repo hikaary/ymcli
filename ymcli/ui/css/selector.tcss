@@ -1,0 +1,7 @@
+#playlists {
+  border: round white;
+  height: 100%; 
+  background: $boost 0%;
+  margin: 1 2 0 2 
+}
+

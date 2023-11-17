@@ -1,0 +1,6 @@
+#stations{
+  border: round white;
+  margin: 2;
+  height: 90%;
+  background: $boost 0%;
+}

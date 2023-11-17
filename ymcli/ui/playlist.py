@@ -1,58 +1,42 @@
-from yandex_music import Playlist, Track, TrackShort, TracksList
+from textual.app import ComposeResult
+from textual.containers import Container
+from textual.widgets import Header, LoadingIndicator
+from textual.widgets.option_list import Option, Separator
 
+from ..player import Player
+from ..yandex_music_client import YandexMusicClient
 from . import widgets
-from .forms import BaseForm
+from .base_screen import BaseScreen
 
 
-class PlaylistsForm(BaseForm):
-    def create(self):
-        super().create()
-        self.name = "Playlists"
-        self.playlist_ui = self.add(
-            widgets.MultiLineActionBox,
-            name="Playlists",
-            max_height=self.max_widgets_height,
+class Playlist(BaseScreen):
+    CSS_PATH = "css/playlist.tcss"
+
+    def __init__(self):
+        super().__init__()
+
+        self.player = Player()
+        self.ym_client = YandexMusicClient()
+
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield LoadingIndicator(disabled=True)
+        yield widgets.TrackList(
+            id="playlist_tracks",
         )
-        self.bar = self.add_bar()
-
-    def beforeEditing(self):
-        self.bar.active_form = self.name
-        self.update_playlists()
-
-    def update_playlists(self):
-        playlists: list[Playlist] = self.ym_client.get_playlists()
-        likes_tracks: TracksList = self.ym_client.get_likes()
-        playlists_names = [
-            (f"{playlist.title} - {playlist.track_count} tracks")
-            for playlist in playlists
-        ]
-        playlists_names.insert(0, f"Likes - {len(likes_tracks)} tracks")
-        playlists.insert(0, likes_tracks)  # type: ignore
-
-        playlists_names.append("Моя волна")
-
-        self.playlist_ui.values = playlists_names
-        self.playlist_ui.playlists = playlists
-
-    def when_select(self):
-        if self.playlist_ui.value == len(self.playlist_ui.values) - 1:
-            self.playlist_ui.value = None
-            self.parentApp.switchForm("SELECT_STATION")
-            return
-
-        playlist: Playlist | TracksList = self.playlist_ui.playlists[
-            self.playlist_ui.value
-        ]
-        playlist_tracks: list[TrackShort] | list[Track] = playlist.fetch_tracks()
-
-        self.playlist_ui.value = None
-        if isinstance(playlist_tracks[0], TrackShort):
-            playlist_tracks = [
-                short_track.track for short_track in playlist_tracks  # type: ignore
-            ]
-
-        self.parentApp.getForm("PLAYLIST_TRACKS").tracks = playlist_tracks
-        self.parentApp.getForm("PLAYLIST_TRACKS").name = (
-            playlist.title if isinstance(playlist, Playlist) else "Likes"
+        yield widgets.TrackInfo(
+            id="playlist_track_info",
         )
-        self.parentApp.switchForm("PLAYLIST_TRACKS")
+        with Container(id="bar_container"):
+            yield widgets.BarTitle()
+            yield widgets.Bar()
+
+    def get_name_tracks(self) -> list[Option | Separator]:
+        name_tracks = []
+        for track in self.player.track_list:
+            artists = ",".join(track.artists_name())
+            track_name = f"{track.title} - {artists}"
+            name_tracks.append(Option(track_name))
+            name_tracks.append(Separator())
+
+        return name_tracks

@@ -8,7 +8,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 yandex-music = "^2.1.1"
-npyscreen = "^4.10.5"
 python-vlc = "^3.0.20123"
 textual = "^0.41.0"
 
