@@ -12,6 +12,9 @@ setup(
         "ymcli.logs",
         "ymcli.ui.widgets",
     ],
+    package_data={
+        "ymcli.ui": ["css/*.tcss"],
+    },
     install_requires=[
         "aiofiles==23.2.1",
         "aiohttp==3.8.6",
