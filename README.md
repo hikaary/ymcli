@@ -73,7 +73,7 @@ ou can find out about getting the token [here](https://yandex-music.readthedocs.
 | J | Move cursor down |
 | ENTER | Select |
 | Space | Play/Pause |
-| ESC | Got to playlists |
+| B | Back to previous menu |
 | UP | Volume up |
 | DOWN | Volume down | 
 | RIGHT | Fast forward the track by 5 seconds |
