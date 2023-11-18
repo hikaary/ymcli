@@ -1,7 +1,6 @@
 from textual.app import ComposeResult
 from textual.containers import Container
-from textual.widgets import Header, LoadingIndicator
-from textual.widgets.option_list import Option, Separator
+from textual.widgets import Header, LoadingIndicator, RadioButton
 from yandex_music import StationResult
 
 from ..config import CONTROL_PLAYER_BINDINGS, SELECT_BINDINGS
@@ -13,42 +12,6 @@ from .base_screen import BaseScreen
 
 class Stations(BaseScreen):
     CSS_PATH = "css/stations.tcss"
-
-    def __init__(self):
-        super().__init__()
-
-        self.player = Player()
-        self.ym_client = YandexMusicClient()
-
-    async def on_mount(self):
-        station_options = await self.get_stations()
-        widget = self.query_one("#stations")
-        widget.add_options(station_options)  # type: ignore
-
-    def compose(self) -> ComposeResult:
-        yield Header()
-        yield LoadingIndicator()
-        yield widgets.Stations(
-            id="stations",
-        )
-        with Container(id="bar_container"):
-            yield widgets.BarTitle()
-            yield widgets.Bar()
-
-    async def get_stations(self) -> list[Option | Separator]:
-        stations: list[StationResult] = await self.ym_client.radio.get_all_stations()
-        self.player.stations = stations
-        values = []
-        for station in stations:
-            values.append(
-                Option(station.station.name),
-            )
-            values.append(Separator())
-        return values
-
-
-class StationTracks(BaseScreen):
-    CSS_PATH = "css/station_tracks.tcss"
     BINDINGS = SELECT_BINDINGS + CONTROL_PLAYER_BINDINGS
 
     def __init__(self):
@@ -60,14 +23,30 @@ class StationTracks(BaseScreen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield LoadingIndicator()
-        yield widgets.TrackInfo(
-            id="station_track_info",
-        )
+        yield widgets.Notification()
+
+        with Container(id="stations_container"):
+            with widgets.StationsRadioWidget(id="stations"):
+                for station in self.get_stations():
+                    yield RadioButton(station.station.name)
+
+            yield widgets.TrackInfo(
+                id="station_track_info",
+            )
         with Container(id="bar_container"):
             yield widgets.BarTitle()
             yield widgets.Bar()
 
+    def get_stations(self) -> list[StationResult]:
+        stations: list[StationResult] = self.ym_client.radio.get_all_stations()
+        self.player.stations = stations
+        return stations
+
     def action_exit(self) -> None:
-        self.highlighted = None
+        likes_tracks = self.ym_client.get_likes()
+        self.player.playlists = [likes_tracks, likes_tracks]
+        playlists = self.ym_client.get_playlists()
+        for playlist in playlists:
+            self.player.playlists.append(playlist)
         self.player.stop()
-        self.app.switch_mode("station_list")
+        self.app.switch_mode("main")

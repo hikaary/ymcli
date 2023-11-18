@@ -1,15 +1,21 @@
+#playlist_contrainer {
+  dock: bottom;
+  width: 80%; 
+  height: 1fr;
+  margin: 0 2 0 2;
+}
+
 #playlist_tracks {
   border: round white;
-  height: 80%;
+  height: 100%;
   width: 60%;
-
   margin: 1 2 0 2;
   dock: left;
   background: $boost 0%;
 }
 
 #playlist_track_info {
-  height: 80%;
+  height: 100%;
   width: 35%;
   border: round white;
   margin: 1 2 0 2;

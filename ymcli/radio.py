@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 from random import random
 
 from yandex_music import Client, StationResult, Track
@@ -15,12 +16,20 @@ class Radio:
         self.current_track: Track | None = None
         self.station_tracks = None
 
-    async def get_all_stations(self) -> list[StationResult]:
-        loop = asyncio.get_running_loop()
-        stations = await loop.run_in_executor(
-            None,
-            self.client.rotor_stations_list,
-        )
+    # async def get_all_stations(self) -> list[StationResult]:
+    #     loop = asyncio.get_running_loop()
+    #     stations = await loop.run_in_executor(
+    #         None,
+    #         self.client.rotor_stations_list,
+    #     )
+    #     available_stations = []
+    #     for station in stations:
+    #         if station.rup_description:
+    #             available_stations.append(station)
+    #     return available_stations
+
+    def get_all_stations(self) -> list[StationResult]:
+        stations = self.client.rotor_stations_list()
         available_stations = []
         for station in stations:
             if station.rup_description:
@@ -73,10 +82,14 @@ class Radio:
                 self.current_track.track_id,
             )
 
-        self.current_track = await loop.run_in_executor(
-            None,
-            self.__update_current_track,
-        )
+        self.current_track = None
+        while self.current_track is None:
+            with contextlib.suppress():
+                self.current_track = await loop.run_in_executor(
+                    None,
+                    self.__update_current_track,
+                )
+
         return self.current_track
 
     def __update_radio_batch(self, queue: int | str | bool = False):

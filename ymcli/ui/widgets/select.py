@@ -5,7 +5,7 @@ from textual.widgets import OptionList
 from textual.widgets.option_list import Option, Separator
 from yandex_music import Track, TrackShort
 
-from ...config import SELECT_BINDINGS
+from ...config import CONTROL_PLAYER_BINDINGS, SELECT_BINDINGS
 from ...player import Player, TrackInfoUpdate
 from ...yandex_music_client import YandexMusicClient
 
@@ -29,13 +29,18 @@ class BaseSelect(OptionList):
         self.show_vertical_scrollbar = False
 
     def action_exit(self) -> None:
+        likes_tracks = self.ym_client.get_likes()
+        self.player.playlists = [likes_tracks, likes_tracks]
+        playlists = self.ym_client.get_playlists()
+        for playlist in playlists:
+            self.player.playlists.append(playlist)
         self.highlighted = None
         self.app.switch_mode("main")
 
 
 class Playlists(BaseSelect):
     class UpdateTracks(Message):
-        def __init__(self, track_list) -> None:
+        def __init__(self, track_list=None) -> None:
             self.track_list = track_list
             super().__init__()
 
@@ -65,6 +70,8 @@ class Playlists(BaseSelect):
 
 
 class TrackList(BaseSelect):
+    BINDINGS = CONTROL_PLAYER_BINDINGS
+
     def action_cursor_up(self) -> None:
         super().action_cursor_up()
         track = self.player.track_list[self.highlighted]  # type: ignore
@@ -81,6 +88,7 @@ class TrackList(BaseSelect):
         await self.player.play(track=self.player.track_list[self.highlighted])
 
     def update_track_list(self, track_list):
+        self.clear_options()
         name_tracks = []
         for track in track_list:
             artists = ",".join(track.artists_name())

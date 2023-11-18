@@ -1,4 +1,5 @@
-from textual.widgets import Label
+from textual.message import Message
+from textual.widgets import Label, Static
 from yandex_music.track.track import Track
 
 
@@ -18,3 +19,15 @@ class TrackInfo(Label):
         Длительность: {duration}
         """
         self.update(track_info)
+
+
+class Notification(Static):
+    class Update(Message):
+        def __init__(self, text: str):
+            self.text = text
+            super().__init__()
+
+    def __init__(self) -> None:
+        super().__init__(
+            id="notification",
+        )

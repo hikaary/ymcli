@@ -1,7 +1,0 @@
-#station_track_info {
-  width: 100%;
-  height: 90%;
-  border: round white;
-  margin: 2;
-}
-

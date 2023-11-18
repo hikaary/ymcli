@@ -11,7 +11,23 @@ LoadingIndicator {
   height: 3; 
   width: 10;
   visibility: hidden;
+  background: transparent;
+}
+
+#notification {
   border: round white;
+  background: transparent;
+
+  dock: top;
+  align: center top;
+  layer: above;
+
+  opacity: 0;
+  visibility: hidden;
+
+  height: 3; 
+  width: 50;
+  offset-y: 5;
 }
 
 OptionList > .option-list--option-highlighted {
@@ -23,28 +39,26 @@ OptionList > .option-list--option-highlighted {
 #bar_container {
   dock: bottom;
   width: 100%;
-  height: 15%;
-  margin: 0 2 1 2;
+  height: 6;
+  margin: 0 2 0 2;
   border: round white;
 }
 
 #bar_title {
-  offset: 4 1;
+  offset: 2 1;
   align: left top;
 }
 
 ProgressBar {
-  offset-y: 2;
-  dock: bottom;
   width: 100%;
-  align: center middle;
-  height: 5;
-  margin: 0 2 1 2;
+  align: left middle;
+  height: 1;
+  margin: 1 2 0 2;
 }
 
 #bar {
   height: 2;
-  width: 90vw;
+  width: 1fr;
 }
 Bar > .bar--complete {
   color: $error;
@@ -58,4 +72,12 @@ Bar > .bar--indeterminate {
 Bar > .bar--bar {
   color: $primary;
   background: $primary 30%;
+}
+
+HeaderIcon {
+  visibility: hidden;
+}
+
+Header.-tall {
+  height: 1;
 }

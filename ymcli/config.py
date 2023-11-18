@@ -36,9 +36,16 @@ CONTROL_PLAYER_BINDINGS: list[BindingType] = [
     Binding("right", "move_track_pos_right", "Move track position right", show=False),
     # Other
     Binding("n", "next", "Next track", show=False),  # EN
+    Binding("l", "like_track", "Like track", show=False),  # EN
+    Binding("d", "dislike_track", "Like track", show=False),  # EN
     Binding("p", "previous", "Previous track", show=False),  # EN
+    Binding("r", "repeat", "Repeat track", show=False),  # EN
+    # RU
+    Binding("д", "like_track", "Like track", show=False),  # RU
+    Binding("в", "dislike_track", "Like track", show=False),  # RU
     Binding("т", "next", "Next track", show=False),  # RU
     Binding("з", "previous", "Previous track", show=False),  # RU
+    Binding("к", "repeat", "Repeat track", show=False),  # EN
 ]
 
 

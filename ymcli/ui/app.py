@@ -1,10 +1,10 @@
 from textual.app import App
 
-from ymcli.player import Player
-
+from ..player import Player
 from .playlist import Playlist
 from .selector import SelectorInputs
-from .stations import Stations, StationTracks
+from .stations import Stations
+from .widgets import Animation
 
 
 class Ymcli(App):
@@ -14,7 +14,6 @@ class Ymcli(App):
         "main": SelectorInputs,
         "playlist": Playlist,
         "stations_list": Stations,
-        "station_track": StationTracks,
     }
 
     def __init__(self):
@@ -35,3 +34,8 @@ class Ymcli(App):
     def on_bar_info_update(self, message):
         widget = self.query_one("#bar_title")
         widget.update_bar_title(message.track)  # type: ignore
+
+    def on_notification_update(self, message):
+        widget = self.query_one("#notification")
+        widget.update(message.text)  # type: ignore
+        Animation(widget).start()

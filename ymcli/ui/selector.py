@@ -22,6 +22,8 @@ class SelectorInputs(BaseScreen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield LoadingIndicator()
+        yield widgets.Notification()
+
         yield widgets.Playlists(
             *self.get_playlists(),
             id="playlists",

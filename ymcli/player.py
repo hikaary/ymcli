@@ -47,6 +47,7 @@ class Player(metaclass=Singleton):
         self.now_playing: Track | None = None
         self.is_paused = False
         self.palying = False
+        self.repeat = False
         self.app = app
 
         self.track_list: list[Track] = []
@@ -54,7 +55,9 @@ class Player(metaclass=Singleton):
         self.stations: list[StationResult] = []
 
     def stop(self) -> None:
+        self.repeat = False
         self.playing = False
+        self.now_playing = None
         self.player.stop()
 
     async def play_pause(self) -> None:
@@ -82,9 +85,9 @@ class Player(metaclass=Singleton):
 
         self.app.post_message(BarInfoUpdate(track))
         await self.play_pause()
-        self.playing = False
         if self.now_playing is None:
-            asyncio.create_task(self.update_bar())
+            loop = asyncio.get_event_loop()
+            loop.create_task(self.update_bar())
         self.now_playing = track
 
     def set_volume(self, volume: int) -> None:
@@ -148,15 +151,16 @@ class Player(metaclass=Singleton):
         try:
             while self.playing:
                 position = self.player.get_position()
-                if position is None:
+                if position is None or self.now_playing is None:
                     await asyncio.sleep(1)
                     continue
 
-                if self.now_playing is None:
-                    await asyncio.sleep(0.01)
-                    continue
+                if position > 1.0 - 0.008:
+                    if self.repeat:
+                        self.player.set_position(0.01)
+                        await asyncio.sleep(0.01)
+                        continue
 
-                if position > 1.0 - 0.01:
                     if self.radio.current_track is not None:
                         track = await self.radio.get_next_track()
                         self.app.post_message(
@@ -174,6 +178,6 @@ class Player(metaclass=Singleton):
                             TrackInfoUpdate(track, "playlist_track_info")
                         )
                         await self.play(track=track)
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(0.1)
         finally:
             self.playing = False

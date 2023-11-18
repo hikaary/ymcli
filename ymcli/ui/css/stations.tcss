@@ -1,6 +1,38 @@
-#stations{
-  border: round white;
-  margin: 2;
-  height: 90%;
-  background: $boost 0%;
+#stations_contrainer {
+  dock: bottom;
+  width: 80%; 
+  height: 1fr;
+  margin: 0 2 0 2;
 }
+
+#stations {
+  width: 60%; 
+  height: 100%;
+  border: round white;
+  margin: 1 2 0 2;
+  dock: left;
+  background: transparent;
+}
+
+#station_track_info {
+  width: 35%; 
+  height: 100%;
+  border: round white;
+  margin: 1 2 0 2;
+  dock: right;
+  text-align: left;
+}
+
+
+RadioSet > * {
+  background: transparent;
+  border: none;
+  padding: 0 1;
+}
+
+RadioSet:focus > RadioButton.-selected > .toggle--label {
+  background: white 60%;
+  color: black;
+  text-style: bold;
+}
+

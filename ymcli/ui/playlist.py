@@ -21,12 +21,15 @@ class Playlist(BaseScreen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield LoadingIndicator(disabled=True)
-        yield widgets.TrackList(
-            id="playlist_tracks",
-        )
-        yield widgets.TrackInfo(
-            id="playlist_track_info",
-        )
+        yield widgets.Notification()
+
+        with Container(id="playlist_container"):
+            yield widgets.TrackList(
+                id="playlist_tracks",
+            )
+            yield widgets.TrackInfo(
+                id="playlist_track_info",
+            )
         with Container(id="bar_container"):
             yield widgets.BarTitle()
             yield widgets.Bar()
