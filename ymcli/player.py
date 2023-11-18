@@ -11,7 +11,6 @@ from .config import MUSIC_DIR, get_config
 from .yandex_music_client import YandexMusicClient
 
 CONFIG = get_config()
-logger = logging.getLogger(__file__)
 
 
 class Singleton(type):
@@ -70,13 +69,10 @@ class Player(metaclass=Singleton):
             self.isPaused = False
 
     async def play(self, track: Track) -> None:
-        logger.debug(f"Start play {track.id}")
-
         saved_tracks = os.listdir(MUSIC_DIR)
         if f"{track.id}.mp3" not in saved_tracks:
             load_indicatopr = self.app.query_one("LoadingIndicator")
             load_indicatopr.styles.visibility = "visible"
-            logger.debug(f"Start download {track.id}")
             await self.ym_client.download(track)
             load_indicatopr.styles.visibility = "hidden"
 
