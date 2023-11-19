@@ -1,6 +1,8 @@
 from textual.app import App
 
+from ..config import get_config
 from ..player import Player
+from ..yandex_music_client import YandexMusicClient
 from .playlist import Playlist
 from .selector import SelectorInputs
 from .stations import Stations
@@ -19,7 +21,9 @@ class Ymcli(App):
     def __init__(self):
         super().__init__()
 
-    def on_mount(self):
+    async def on_mount(self):
+        config = get_config()
+        await YandexMusicClient.initialize_client(config.token)
         Player(self.app)
         self.app.switch_mode("main")
 

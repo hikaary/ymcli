@@ -1,6 +1,6 @@
 from textual.message import Message
 from textual.widgets import Label, Static
-from yandex_music.track.track import Track
+from yandex_music import Track
 
 
 def seconds_to_minutes(seconds):

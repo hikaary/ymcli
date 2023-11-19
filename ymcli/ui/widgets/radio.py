@@ -33,7 +33,6 @@ class StationsRadioWidget(RadioSet):
         self.radio = self.ym_client.radio
 
     async def action_toggle(self) -> None:
-        super().action_toggle()
         station = self.player.stations[self.pressed_index].station
 
         load_indicatopr = self.app.query_one("LoadingIndicator")
@@ -43,4 +42,5 @@ class StationsRadioWidget(RadioSet):
             station_from=station.id_for_from,
         )
         await self.player.play(track=track)
+        load_indicatopr.styles.visibility = "hidden"
         self.post_message(TrackInfoUpdate(track, "station_track_info"))

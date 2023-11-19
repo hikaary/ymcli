@@ -1,9 +1,9 @@
 from threading import Timer
 
 from textual.widgets import Label, ProgressBar
-from yandex_music.track.track import Track
+from yandex_music import Track
 
-from ymcli.player import Player
+from ...player import Player
 
 
 class Bar(ProgressBar):

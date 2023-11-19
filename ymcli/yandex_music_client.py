@@ -1,6 +1,4 @@
-import asyncio
-
-from yandex_music import Client, Playlist, Track, TracksList
+from yandex_music import ClientAsync, Playlist, Track, TracksList
 
 from .config import MUSIC_DIR
 from .radio import Radio
@@ -16,41 +14,43 @@ class Singleton(type):
 
 
 class YandexMusicClient(metaclass=Singleton):
-    def __init__(self, token: str | None = None):
-        self.token = token
-        self.client: Client = self.initialize_client()
-        self.radio = Radio(self.client)
+    def __init__(
+        self,
+        client: ClientAsync | None = None,
+        radio: Radio | None = None,
+    ):
+        self.client: ClientAsync | None = client
+        self.radio: Radio | None = radio
 
-    def initialize_client(self) -> Client:
-        if self.token is None:
+    @classmethod
+    async def initialize_client(cls, token):
+        if token is None:
             raise AttributeError("Token not found")
 
-        client = Client(self.token)
-        return client.init()
+        client = ClientAsync(token)
+        await client.init()
+        radio = Radio(client)
+        cls(client, radio)
 
-    def get_playlists(self) -> list[Playlist]:
-        return self.client.users_playlists_list()
+    async def get_playlists(self) -> list[Playlist]:
+        return await self.client.users_playlists_list()
 
-    def get_likes(self) -> TracksList:
-        likes_song = self.client.users_likes_tracks()
+    async def get_likes(self) -> TracksList:
+        likes_song = await self.client.users_likes_tracks()
+
         if likes_song is None:
             raise AttributeError("Client not logged")
         return likes_song
 
-    def search_tracks(self, query: str) -> list[Track]:
-        search_result = self.client.search(query, type_="track")
+    async def search_tracks(self, query: str) -> list[Track]:
+        search_result = await self.client.search(query, type_="track")
         return search_result.tracks.results
 
     async def download(self, track: Track):
-        loop = asyncio.get_running_loop()
-        await loop.run_in_executor(
-            None,
-            track.download,
-            MUSIC_DIR + str(track.id) + ".mp3",
-        )
+        await track.download_async(MUSIC_DIR + str(track.id) + ".mp3")
 
-    def like_track(self, track: Track):
-        track.like()
+    async def like_track(self, track: Track):
+        await track.like_async()
 
-    def dislike_track(self, track: Track):
-        track.dislike()
+    async def dislike_track(self, track: Track):
+        await track.dislike_async()

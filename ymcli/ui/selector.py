@@ -19,35 +19,39 @@ class SelectorInputs(BaseScreen):
         self.player = Player()
         self.ym_client = YandexMusicClient()
 
+    async def on_mount(self) -> None:
+        playlists = await self.get_playlists()
+        playlists_widget = self.query_one("#playlists")
+        playlists_widget.add_options(playlists)  # type: ignore
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield LoadingIndicator()
         yield widgets.Notification()
 
-        yield widgets.Playlists(
-            *self.get_playlists(),
-            id="playlists",
-        )
+        yield widgets.Playlists(id="playlists")
         with Container(id="bar_container"):
             yield widgets.BarTitle()
             yield widgets.Bar()
 
-    def get_playlists(self) -> list[Option | Separator]:
-        likes_tracks: TracksList = self.ym_client.get_likes()
+    async def get_playlists(self):
+        likes_tracks: TracksList = await self.ym_client.get_likes()
         self.player.playlists = [likes_tracks, likes_tracks]
-        playlists: list[Playlist] = self.ym_client.get_playlists()
-        values = [
+        playlists: list[Playlist] = await self.ym_client.get_playlists()
+        options = [
             Option("Моя волна"),
             Separator(),
             Option(f"Любимые - {len(likes_tracks)} песен"),
             Separator(),
         ]
         for playlist in playlists:
-            values.append(
-                Option(
-                    f"{playlist.title} - {playlist.track_count} песен",
-                ),
+            options.extend(
+                [
+                    Option(
+                        f"{playlist.title} - {playlist.track_count} песен",
+                    ),
+                    Separator(),
+                ]
             )
-            values.append(Separator())
             self.player.playlists.append(playlist)
-        return values
+        return options

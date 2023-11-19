@@ -46,16 +46,16 @@ class BaseScreen(Screen):
         return
         self.player.repeat = not self.player.repeat
 
-    def action_like_track(self) -> None:
+    async def action_like_track(self) -> None:
         if self.player.now_playing is None:
             return
 
         self.post_message(Notification.Update("Like track"))
-        self.ym_client.like_track(self.player.now_playing)
+        await self.ym_client.like_track(self.player.now_playing)
 
-    def action_dislike_track(self) -> None:
+    async def action_dislike_track(self) -> None:
         if self.player.now_playing is None:
             return
 
         self.post_message(Notification.Update("Dislike track"))
-        self.ym_client.dislike_track(self.player.now_playing)
+        await self.ym_client.dislike_track(self.player.now_playing)

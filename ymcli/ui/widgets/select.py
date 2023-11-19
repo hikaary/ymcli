@@ -1,5 +1,3 @@
-import asyncio
-
 from textual.message import Message
 from textual.widgets import OptionList
 from textual.widgets.option_list import Option, Separator
@@ -28,10 +26,10 @@ class BaseSelect(OptionList):
     def watch_show_vertical_scrollbar(self):
         self.show_vertical_scrollbar = False
 
-    def action_exit(self) -> None:
-        likes_tracks = self.ym_client.get_likes()
+    async def action_exit(self) -> None:
+        likes_tracks = await self.ym_client.get_likes()
         self.player.playlists = [likes_tracks, likes_tracks]
-        playlists = self.ym_client.get_playlists()
+        playlists = await self.ym_client.get_playlists()
         for playlist in playlists:
             self.player.playlists.append(playlist)
         self.highlighted = None
@@ -54,11 +52,10 @@ class Playlists(BaseSelect):
 
         playlist = self.player.playlists[self.highlighted]
 
-        loop = asyncio.get_running_loop()
-        playlist_tracks: list[TrackShort] | list[Track] = await loop.run_in_executor(
-            None,
-            playlist.fetch_tracks,
-        )
+        playlist_tracks: list[TrackShort] | list[
+            Track
+        ] = await playlist.fetch_tracks_async()
+
         if isinstance(playlist_tracks[0], TrackShort):
             playlist_tracks = [
                 short_track.track for short_track in playlist_tracks  # type: ignore

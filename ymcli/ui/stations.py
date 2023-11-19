@@ -20,32 +20,38 @@ class Stations(BaseScreen):
         self.player = Player()
         self.ym_client = YandexMusicClient()
 
+    async def on_mount(self) -> None:
+        stations = await self.get_stations()
+        station_widget = self.query_one("#stations")
+        radio_buttons = []
+        for station in stations:
+            radio_buttons.append(RadioButton(station.station.name))
+        station_widget.mount_all(radio_buttons)
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield LoadingIndicator()
         yield widgets.Notification()
 
         with Container(id="stations_container"):
-            with widgets.StationsRadioWidget(id="stations"):
-                for station in self.get_stations():
-                    yield RadioButton(station.station.name)
+            yield widgets.StationsRadioWidget(id="stations")
 
-            yield widgets.TrackInfo(
-                id="station_track_info",
-            )
+        yield widgets.TrackInfo(
+            id="station_track_info",
+        )
         with Container(id="bar_container"):
             yield widgets.BarTitle()
             yield widgets.Bar()
 
-    def get_stations(self) -> list[StationResult]:
-        stations: list[StationResult] = self.ym_client.radio.get_all_stations()
+    async def get_stations(self) -> list[StationResult]:
+        stations: list[StationResult] = await self.ym_client.radio.get_all_stations()
         self.player.stations = stations
         return stations
 
-    def action_exit(self) -> None:
-        likes_tracks = self.ym_client.get_likes()
+    async def action_exit(self) -> None:
+        likes_tracks = await self.ym_client.get_likes()
         self.player.playlists = [likes_tracks, likes_tracks]
-        playlists = self.ym_client.get_playlists()
+        playlists = await self.ym_client.get_playlists()
         for playlist in playlists:
             self.player.playlists.append(playlist)
         self.player.stop()
