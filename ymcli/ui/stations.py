@@ -36,9 +36,9 @@ class Stations(BaseScreen):
         with Container(id="stations_container"):
             yield widgets.StationsRadioWidget(id="stations")
 
-        yield widgets.TrackInfo(
-            id="station_track_info",
-        )
+            yield widgets.TrackInfo(
+                id="station_track_info",
+            )
         with Container(id="bar_container"):
             yield widgets.BarTitle()
             yield widgets.Bar()

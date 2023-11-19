@@ -53,9 +53,7 @@ class Radio:
                 self.current_track.track_id,
             )
 
-        self.current_track = None
-        while self.current_track is None:
-            await self.__update_current_track()
+        self.current_track = await self.__update_current_track()
 
         return self.current_track
 
