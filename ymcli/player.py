@@ -105,7 +105,10 @@ class Player(metaclass=Singleton):
             return
 
         if self.radio.current_track:
+            load_indicatopr = self.app.query_one("LoadingIndicator")
+            load_indicatopr.styles.visibility = "visible"
             track = await self.radio.get_next_track()
+            load_indicatopr.styles.visibility = "hidden"
             self.app.post_message(TrackInfoUpdate(track, "station_track_info"))
             await self.play(track=track)
             return
