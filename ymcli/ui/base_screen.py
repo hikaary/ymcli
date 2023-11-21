@@ -43,8 +43,8 @@ class BaseScreen(Screen):
         self.player.move_track_position(right=True)
 
     def action_repeat(self) -> None:
-        return
         self.player.repeat = not self.player.repeat
+        self.post_message(Notification.Update(f"Repeat: {self.player.repeat}"))
 
     async def action_like_track(self) -> None:
         if self.player.now_playing is None:

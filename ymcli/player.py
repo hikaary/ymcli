@@ -22,7 +22,11 @@ class Singleton(type):
 
 
 class TrackInfoUpdate(Message):
-    def __init__(self, track: Track, widget_selector: str) -> None:
+    def __init__(
+        self,
+        track: Track,
+        widget_selector: str,
+    ) -> None:
         self.track = track
         self.widget_selector = widget_selector
         super().__init__()
@@ -81,8 +85,8 @@ class Player(metaclass=Singleton):
         self.app.post_message(BarInfoUpdate(track))
         await self.play_pause()
         if self.now_playing is None:
-            loop = asyncio.get_event_loop()
-            loop.create_task(self.update_bar())
+            asyncio.create_task(self.update_bar())
+            await asyncio.sleep(0)
         self.now_playing = track
 
     def set_volume(self, volume: int) -> None:
@@ -148,14 +152,18 @@ class Player(metaclass=Singleton):
         self.playing = True
         try:
             while self.playing:
-                position = self.player.get_position()
+                position = self.get_position()
                 if position is None or self.now_playing is None:
                     await asyncio.sleep(1)
                     continue
 
-                if position > 1.0 - 0.008:
+                total = self.now_playing.duration_ms // 1000  # type: ignore
+                now_position = position * total
+
+                if now_position + 0.5 >= total:
                     if self.repeat:
-                        self.player.set_position(0.01)
+                        self.player.stop()
+                        await self.play(self.now_playing)
                         await asyncio.sleep(0.01)
                         continue
 
@@ -178,4 +186,5 @@ class Player(metaclass=Singleton):
                         await self.play(track=track)
                 await asyncio.sleep(0.1)
         finally:
+            self.stop()
             self.playing = False
